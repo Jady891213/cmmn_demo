@@ -375,21 +375,21 @@
          */
         function getStatusTag(status, nodeId = null) {
             let color = 'gray';
-            let text = '未开始/草稿';
+            let text = '未开始';
             if (status === 'Completed') {
                 color = 'emerald';
                 text = '已完成';
             } else if (status === 'Pending' || status === 'Draft' || status === 'In Progress' || status === 'Active') {
                 color = 'indigo';
-                text = '进行中/待处理';
+                text = '进行中';
             // BEGIN - 阻止状态更新
             } else if (status === 'Blocked') {
                 color = 'slate'; // 从 'red' 改为 'slate' (深灰色)
-                text = '等待前置'; // 从 '被阻止' 改为 '等待前置'
+                text = '待激活'; // 从 '被阻止' 改为 '待激活'
             // END - 阻止状态更新
             } else if (status === 'Available') {
                 color = 'blue';
-                text = '可选/待激活';
+                text = '可选激活';
             } else if (status === 'AwaitingRevision') {
                 color = 'amber';
                 text = '驳回 (待修订)';
