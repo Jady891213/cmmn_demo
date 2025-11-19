@@ -145,16 +145,23 @@
     <script>
         // --- 新增映射表：将看板节点ID映射到待办收件箱中的任务ID ---
         const kanbanToInboxMap = {
-            301: 1, // '财务初审与汇总' (Kanban) -> 'Q4 预算复核及报表填写' (Inbox Task ID 1)
-            // 203: 2, // 暂时不需要，因为我们聚焦在驳回逻辑
+            // Kanban ID -> Inbox Task ID
+            203: 7, // '资本支出计划提报'
+            204: 8, // '收入预测模型核对'
+            301: 1, // '财务初审与汇总'
         };
         function openTaskInInbox(kanbanNodeId) {
             const inboxTaskId = kanbanToInboxMap[kanbanNodeId];
             if (inboxTaskId) {
-                // 跳转到 taskinbox_index.html，并以 taskId 作为 URL 参数
-                // 仅作演示，实际环境中可能需要实现跳转
-                showMessage(`正在模拟跳转到待办任务中心，任务 ID: ${inboxTaskId}`, 'info');
-                // window.location.href = `taskinbox_index.html?taskId=${inboxTaskId}`;
+                showMessage(`正在新标签页中打开待办任务中心，任务 ID: ${inboxTaskId}，并筛选流程为【财务预算 V2】`, 'info');
+
+                // 关键修改：新增 processFilter 参数，并对中文进行编码
+                const processName = '财务预算 V2';
+                const url = `taskinbox/index.html?taskId=${inboxTaskId}&processFilter=${encodeURIComponent(processName)}`;
+
+                // 使用 window.open() 在新标签页打开
+                window.open(url, '_blank');
+
             } else {
                 showMessage(`节点 ID ${kanbanNodeId} 暂无对应待办任务 (Inbox Task ID)。`, 'warning');
             }
