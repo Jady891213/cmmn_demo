@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>预算编制控制台 (Budgeting Cockpit) - 流程实例化的里程碑视图</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Import Inter font and set body styles */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc; /* Lightest Background */
+            color: #1f2937;
+        }
+
+        /* Custom scrollbar style */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f8f8f8;
+        }
+
+        /* Filter Selector Styling */
+        .pov-select {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            background-color: white;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%236b7280'%3e%3cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            background-size: 1.5em;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .pov-select:focus {
+            border-color: #4f46e5;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        /* Enhanced Active Case List Item */
+        .case-list-item {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .case-list-item:hover {
+            background-color: #f7f9fc;
+        }
+        .case-list-item.active-case {
+            border-left: 4px solid #4f46e5; /* Highlight */
+            background-color: #eef2ff; /* Indigo-50 */
+            box-shadow: 0 0 0 1px rgba(79, 70, 229, 0.1); /* Subtle ring effect */
+        }
+
+        /* Adjust cell padding to increase row height */
+        .case-list-item td {
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+            vertical-align: top; /* Ensure content aligns nicely at the top */
+        }
+
+        /* Make table header sticky for better scrolling */
+        .sticky-header thead th {
+             position: sticky;
+             top: 0;
+             background-color: white;
+             z-index: 10;
+             border-bottom: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+<body class="h-screen overflow-hidden">
+    <div id="message-box" class="fixed top-4 right-4 z-50 p-4 rounded-lg shadow-xl text-white transform transition-all duration-300 translate-x-full opacity-0"></div>
+
+    <div id="app" class="h-full flex flex-col p-6 space-y-6">
+
+        <div class="bg-white p-5 rounded-xl shadow-md border-t-4 border-indigo-600">
+            <div class="flex justify-between items-center mb-4">
+                <h1 class="text-2xl font-bold text-gray-800 flex items-center">
+                    <svg class="w-6 h-6 mr-3 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                    预算编制控制台
+                </h1>
+                <button onclick="initiateNewCase()" class="px-5 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition flex items-center text-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    发起新预算流程
+                </button>
+            </div>
+
+            <div class="flex items-center space-x-6">
+                <p class="text-sm font-medium text-gray-500">当前视角 (POV):</p>
+
+                <div class="relative">
+                    <label for="filter-year" class="block text-xs font-medium text-gray-500 mb-1">年份</label>
+                    <select id="filter-year" class="pov-select w-24" onchange="updateAndRenderAll()">
+                        <option value="2026">2026</option>
+                        <option value="2027">2027</option>
+                    </select>
+                </div>
+                <div class="relative">
+                    <label for="filter-company" class="block text-xs font-medium text-gray-500 mb-1">公司/事业部</label>
+                    <select id="filter-company" class="pov-select w-36" onchange="updateAndRenderAll()">
+                        <option value="All">所有公司</option> <option value="GroupHoldings">集团控股</option>
+                        <option value="APAC">亚太事业部</option>
+                        <option value="NAM">北美事业部</option>
+                    </select>
+                </div>
+                <div class="relative">
+                    <label for="filter-version" class="block text-xs font-medium text-gray-500 mb-1">版本</label>
+                    <select id="filter-version" class="pov-select w-24" onchange="updateAndRenderAll()">
+                        <option value="All">所有版本</option> <option value="V2">V2 (当前)</option>
+                        <option value="V1">V1</option>
+                        <option value="V3">V3 (草稿)</option>
+                    </select>
+                </div>
+
+                <button onclick="updateAndRenderAll(true)" class="ml-auto px-4 py-1.5 bg-indigo-500 text-white font-semibold rounded-lg hover:bg-indigo-600 transition text-sm flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    应用视角
+                </button>
+            </div>
+        </div>
+
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-grow min-h-0">
+
+            <div class="lg:col-span-1 flex flex-col space-y-6">
+
+                <div class="bg-white p-5 rounded-xl shadow-md border-l-4 border-indigo-400">
+                    <h2 class="text-lg font-bold text-gray-800 mb-3">流程关键指标 (KPI)</h2>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center border-b pb-2">
+                             <p class="text-sm font-medium text-gray-500">流程实例总数</p>
+                             <p id="kpi-total-cases" class="text-xl font-extrabold text-gray-900">6</p>
+                        </div>
+                        <div class="flex justify-between items-center border-b pb-2">
+                             <p class="text-sm font-medium text-gray-500">进行中 / 需关注</p>
+                             <p id="kpi-active-cases" class="text-xl font-extrabold text-indigo-600">3</p>
+                        </div>
+                        <div class="flex justify-between items-center">
+                             <p class="text-sm font-medium text-gray-500">总流程完成率</p>
+                             <p id="kpi-completion-rate" class="text-xl font-extrabold text-emerald-600">33.3%</p>
+                        </div>
+                    </div>
+                </div>
+
+                 <div class="bg-white p-5 rounded-xl shadow-md border border-gray-100 flex-grow">
+                      <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                         <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                         快速导航
+                     </h2>
+                     <ul class="space-y-3">
+                         <li><a href="index.html" target="_blank" class="flex items-center text-indigo-600 hover:text-indigo-800 text-sm font-medium"><svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg> 2026预算编制看板</a></li>
+                         <li><a href="taskinbox_index.html" target="_blank" class="flex items-center text-indigo-600 hover:text-indigo-800 text-sm font-medium"><svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> 任务待办中心 (Inbox)</a></li>
+                         <li><a href="#" class="flex items-center text-indigo-600 hover:text-indigo-800 text-sm font-medium"><svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg> 预算编制说明文档</a></li>
+                     </ul>
+                 </div>
+            </div>
+
+
+            <div class="lg:col-span-3 flex flex-col bg-white rounded-xl shadow-md p-5 min-h-full border border-gray-100">
+                <div class="flex justify-between items-center mb-4 border-b pb-2">
+                    <h2 class="text-xl font-bold text-gray-800">流程实例列表 (当前视角)</h2>
+                    <input type="text" id="search-input" placeholder="按实例名称或 ID 筛选..." class="p-1.5 border border-gray-300 rounded-md text-sm w-56 focus:ring-indigo-500 focus:border-indigo-500" onkeyup="renderCaseList()">
+                </div>
+
+                <div class="flex-grow custom-scrollbar overflow-y-auto">
+                    <table class="min-w-full divide-y divide-gray-200 sticky-header">
+                        <thead class="sticky top-0 bg-white">
+                            <tr>
+                                <th class="py-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-1/16 text-left px-3">ID</th>
+                                <th class="py-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-4/16 text-left">流程实例名称</th>
+                                <th class="py-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-1/16 text-left">状态</th>
+                                <th class="py-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-5/16 text-left">里程碑</th>
+                                <th class="py-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-3/16 text-left">当前阶段/进度</th>
+                                <th class="py-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-2/16 text-center">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="case-list-body" class="bg-white divide-y divide-gray-100">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Core Milestones Definition (Used for ID 1001 and new cases) ---
+        const CORE_MILESTONES = [
+             { name: '预算目标设定', key: 'TargetSetting' },
+             { name: '所有部门草案已提报', key: 'DraftSubmitted' },
+             { name: '高管委员会审批通过', key: 'ExcoApproval' }
+        ];
+
+        // --- Enhanced Mock Data (Using varied milestone sets) ---
+        let mockCases = [
+            // ID 1001: Keep the user's requested milestones for the main budget process
+            {
+                id: 1001, name: '2026 年度预算编制 - CMMN 案例流', year: 2026, company: 'GroupHoldings', version: 'V2', status: 'Active',
+                currentPhase: '部门草案编制', revisionCount: 2, progress: 75, initiator: '张三', startDate: '2025-11-01',
+                milestones: [
+                    { name: CORE_MILESTONES[0].name, status: 'Completed' }, // 预算目标设定
+                    { name: CORE_MILESTONES[1].name, status: 'Active' },    // 所有部门草案已提报
+                    { name: CORE_MILESTONES[2].name, status: 'Pending' }   // 高管委员会审批通过
+                ]
+            },
+            // ID 1002: Annual Performance Review - Completed, many steps
+            {
+                id: 1002, name: '亚太区年度绩效评估', year: 2026, company: 'APAC', version: 'V1', status: 'Completed',
+                currentPhase: '流程已归档', revisionCount: 1, progress: 100, initiator: '李四', startDate: '2025-10-15',
+                milestones: [
+                    { name: '绩效目标设定', status: 'Completed' },
+                    { name: '收集员工自评和反馈', status: 'Completed' },
+                    { name: '部门经理初评', status: 'Completed' },
+                    { name: 'HR 部门审核校准', status: 'Completed' },
+                    { name: '高管委员会最终审批', status: 'Completed' }
+                ]
+            },
+            // ID 1003: Capital Expenditure Request - Active, 3 steps
+            {
+                id: 1003, name: '北美 Q1 资本支出申请', year: 2026, company: 'NAM', version: 'V1', status: 'Active',
+                currentPhase: '财务审批', revisionCount: 1, progress: 30, initiator: '王五', startDate: '2025-12-10',
+                milestones: [
+                    { name: '部门申请提交', status: 'Completed' },
+                    { name: '财务部门复核与排期', status: 'Active' },
+                    { name: 'CEO 最终批准', status: 'Pending' }
+                ]
+            },
+            // ID 1005: Marketing Budget Application - Failed
+            {
+                id: 1005, name: '亚太区营销活动预算申请', year: 2026, company: 'APAC', version: 'V1', status: 'Failed',
+                currentPhase: '系统校验失败', revisionCount: 1, progress: 10, initiator: '赵六', startDate: '2025-12-01',
+                milestones: [
+                    { name: '营销方案定稿', status: 'Completed' },
+                    { name: '预算草案提报', status: 'Failed' }, // Marked as Failed/Abnormal
+                    { name: '预算委员会审批', status: 'Pending' }
+                ]
+            },
+            // ID 1006: Fixed Asset Scrap Process - Active, different steps
+            {
+                id: 1006, name: '固定资产报废流程', year: 2026, company: 'GroupHoldings', version: 'V2', status: 'Active',
+                currentPhase: '部门负责人审批', revisionCount: 1, progress: 50, initiator: '钱七', startDate: '2025-12-15',
+                milestones: [
+                    { name: '报废申请提交', status: 'Completed' },
+                    { name: '资产管理部门核查', status: 'Completed' },
+                    { name: '财务核销与出账', status: 'Active' }
+                ]
+            },
+            // ID 1007: New Product R&D Budget - Active, 4 steps
+            {
+                id: 1007, name: '北美新产品研发预算 V2', year: 2026, company: 'NAM', version: 'V2', status: 'Active',
+                currentPhase: '研发部门调整', revisionCount: 1, progress: 45, initiator: '王五', startDate: '2025-12-18',
+                milestones: [
+                    { name: '研发立项', status: 'Completed' },
+                    { name: '市场可行性分析', status: 'Active' },
+                    { name: '初步预算编制', status: 'Pending' },
+                    { name: '跨部门协调会议', status: 'Pending' }
+                ]
+            },
+            // Additional data for the 2027 year, V3 version, etc. to test 'All' filtering
+            {
+                id: 2001, name: '2027 年度预算编制 - 集团总部 V3 草案', year: 2027, company: 'GroupHoldings', version: 'V3', status: 'Active',
+                currentPhase: '目标设定中', revisionCount: 1, progress: 20, initiator: '张三', startDate: '2026-11-01',
+                milestones: [
+                    { name: CORE_MILESTONES[0].name, status: 'Active' },
+                    { name: CORE_MILESTONES[1].name, status: 'Pending' },
+                    { name: CORE_MILESTONES[2].name, status: 'Pending' }
+                ]
+            },
+        ];
+
+        let activeCaseId = 1001;
+
+        // --- Utility Functions ---
+
+        /** Custom Message Box (Unchanged) */
+        function showMessage(message, type = 'info') {
+            const box = document.getElementById('message-box');
+            let bgColor = '';
+            if (type === 'error' || type === 'Failed') bgColor = 'bg-red-600';
+            else if (type === 'warning' || type === 'Cancelled') bgColor = 'bg-gray-500';
+            else if (type === 'success' || type === 'Completed') bgColor = 'bg-emerald-600';
+            else bgColor = 'bg-indigo-600';
+
+            box.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-xl text-white transform transition-all duration-300 translate-x-full opacity-0 ${bgColor}`;
+            box.innerHTML = message;
+
+            requestAnimationFrame(() => {
+                box.classList.remove('translate-x-full', 'opacity-0');
+                box.classList.add('translate-x-0', 'opacity-100');
+            });
+
+            setTimeout(() => {
+                box.classList.remove('translate-x-0', 'opacity-100');
+                box.classList.add('translate-x-full', 'opacity-0');
+            }, 4000);
+        }
+
+        /** Renders the status tag based on the case status (Unchanged) */
+        function getStatusTag(status) {
+            let color = 'gray';
+            let text = '未知';
+
+            if (status === 'Completed') {
+                color = 'emerald';
+                text = '已完成';
+            } else if (status === 'Active') {
+                color = 'indigo';
+                text = '进行中';
+            } else if (status === 'Cancelled') {
+                color = 'gray';
+                text = '已取消/终止';
+            } else if (status === 'Failed') {
+                color = 'red';
+                text = '失败/异常';
+            } else if (status === 'Pending') {
+                 color = 'amber';
+                 text = '待处理';
+            }
+
+            return `<span class="text-xs font-bold uppercase px-2 py-0.5 rounded-full bg-${color}-100 text-${color}-700">${text}</span>`;
+        }
+
+        /**
+         * Renders the milestone list as multi-line text with status icons. (Unchanged from V7)
+         */
+        function renderMilestoneList(milestones) {
+            let html = '<div class="space-y-1">';
+
+            milestones.forEach(m => {
+                let iconHtml = '';
+                let statusClass = 'text-gray-500';
+
+                if (m.status === 'Completed') {
+                    // Green Checkmark
+                    iconHtml = `<svg class="w-4 h-4 text-emerald-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>`;
+                    statusClass = 'text-gray-800 font-medium line-through';
+                } else if (m.status === 'Active') {
+                    // Blue Clock/Processing
+                    iconHtml = `<svg class="w-4 h-4 text-indigo-500 mr-2 flex-shrink-0 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+                    statusClass = 'text-indigo-600 font-semibold';
+                } else if (m.status === 'Failed') {
+                    // Red Alert
+                    iconHtml = `<svg class="w-4 h-4 text-red-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>`;
+                    statusClass = 'text-red-600 font-semibold';
+                } else {
+                    // Gray Clock (Pending)
+                    iconHtml = `<svg class="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+                    statusClass = 'text-gray-500';
+                }
+
+                // Add strikethrough class only if completed and not failed
+                const textDecoration = m.status === 'Completed' && m.status !== 'Failed' ? 'line-through' : '';
+
+                html += `
+                    <div class="flex items-start text-sm">
+                        ${iconHtml}
+                        <span class="${statusClass} ${textDecoration}">${m.name}</span>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            return html;
+        }
+
+        /** Calculate and update KPI values - UPDATED for 'All' filter */
+        function updateKPIs(showMsg = false) {
+            const year = document.getElementById('filter-year').value;
+            const company = document.getElementById('filter-company').value;
+            const version = document.getElementById('filter-version').value;
+
+            const filteredCases = mockCases.filter(c =>
+                c.year.toString() === year &&
+                (company === 'All' || c.company === company) &&
+                (version === 'All' || c.version === version)
+            );
+
+            const totalCases = filteredCases.length;
+            const completedCases = filteredCases.filter(c => c.status === 'Completed').length;
+            const activeCases = filteredCases.filter(c => c.status === 'Active' || c.status === 'Failed').length;
+            const completionRate = totalCases > 0 ? ((completedCases / totalCases) * 100).toFixed(1) : 0.0;
+
+            document.getElementById('kpi-total-cases').textContent = totalCases;
+            document.getElementById('kpi-active-cases').textContent = activeCases;
+            document.getElementById('kpi-completion-rate').textContent = `${completionRate}%`;
+
+            if (showMsg) {
+                const companyText = company === 'All' ? '所有公司' : company;
+                const versionText = version === 'All' ? '所有版本' : version;
+                showMessage(`KPIs 已根据视角【${year} - ${companyText} - ${versionText}】更新。总共找到 ${totalCases} 个流程实例。`, 'info');
+            }
+        }
+
+        /**
+         * Renders the table rows based on mockCases data and current POV filters - UPDATED for 'All' filter
+         */
+        function renderCaseList() {
+            const tbody = document.getElementById('case-list-body');
+            const searchText = document.getElementById('search-input').value.toLowerCase();
+            const year = document.getElementById('filter-year').value;
+            const company = document.getElementById('filter-company').value;
+            const version = document.getElementById('filter-version').value;
+
+            let html = '';
+
+            // Filter by POV first, using 'All' check
+            let filteredCases = mockCases.filter(c =>
+                c.year.toString() === year &&
+                (company === 'All' || c.company === company) &&
+                (version === 'All' || c.version === version)
+            );
+
+            // Then filter by search text
+            filteredCases = filteredCases.filter(c =>
+                c.name.toLowerCase().includes(searchText) ||
+                c.id.toString().includes(searchText)
+            );
+
+            // Sort active case (ID 1001) to the top for visibility
+            filteredCases.sort((a, b) => {
+                 if (a.id === activeCaseId) return -1;
+                 if (b.id === activeCaseId) return 1;
+                 return 0;
+            });
+
+
+            filteredCases.forEach(caseItem => {
+                const isActiveCase = caseItem.id === activeCaseId;
+                const rowClass = isActiveCase ? 'active-case' : '';
+
+                // Progress Bar and Current Phase
+                const progressColor = caseItem.status === 'Completed' ? 'bg-emerald-500' : (caseItem.status === 'Active' ? 'bg-indigo-500' : 'bg-gray-400');
+                const progressHtml = `
+                    <div class="flex items-center space-x-2 mt-1">
+                        <div class="w-full bg-gray-200 rounded-full h-1.5">
+                            <div class="h-1.5 rounded-full ${progressColor}" style="width: ${caseItem.progress}%"></div>
+                        </div>
+                        <span class="text-xs font-medium text-gray-500 w-8 text-right">${caseItem.progress}%</span>
+                    </div>
+                `;
+
+                html += `
+                    <tr id="case-${caseItem.id}" class="case-list-item ${rowClass}" onclick="viewCaseDetails(${caseItem.id})">
+                        <td class="py-2 text-sm font-medium text-gray-900 px-3">${caseItem.id}</td>
+                        <td class="py-2 text-sm text-gray-700">
+                             <span class="font-medium ${isActiveCase ? 'text-indigo-800' : ''}">${caseItem.name}</span>
+                             <span class="ml-2 text-xs text-gray-400">(${caseItem.startDate})</span>
+                        </td>
+                        <td class="py-2 text-sm whitespace-nowrap">${getStatusTag(caseItem.status)}</td>
+
+                        <td class="py-2 text-sm text-gray-600">
+                             ${renderMilestoneList(caseItem.milestones)}
+                        </td>
+                        <td class="py-2 text-sm text-gray-600">
+                             <span class="text-sm font-medium text-gray-800 block">${caseItem.currentPhase}</span>
+                             ${progressHtml}
+                        </td>
+                        <td class="py-2 text-sm text-center whitespace-nowrap">
+                            <button onclick="event.stopPropagation(); handleCaseAction(${caseItem.id}, 'ViewKanban')" class="px-3 py-1 text-xs font-medium rounded-md text-indigo-600 hover:bg-indigo-100 transition">
+                                查看看板
+                            </button>
+                            ${caseItem.status === 'Active' ? `
+                                <button onclick="event.stopPropagation(); handleCaseAction(${caseItem.id}, 'Cancel')" class="ml-2 px-3 py-1 text-xs font-medium rounded-md text-red-600 hover:bg-red-100 transition">
+                                    终止
+                                </button>
+                            ` : ''}
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        // --- Event Handlers (Unchanged logic) ---
+
+        function initiateNewCase() {
+            const year = document.getElementById('filter-year').value;
+            const company = document.getElementById('filter-company').value;
+
+            showMessage(`正在模拟启动【${year} 年度 - ${company}】的新流程实例...`, 'info');
+
+            setTimeout(() => {
+                const newId = Math.max(...mockCases.map(c => c.id)) + 1;
+                const today = new Date().toISOString().split('T')[0];
+                const newVersion = (Math.random() < 0.5 ? 'V2' : 'V3');
+
+                // New case uses the CORE milestones as a default for a budget process
+                const newCase = {
+                    id: newId,
+                    name: `新启动预算流程 - ${company === 'All' ? '集团控股' : company}`,
+                    year: parseInt(year),
+                    company: company === 'All' ? 'GroupHoldings' : company,
+                    version: newVersion,
+                    status: 'Active',
+                    currentPhase: '流程启动与目标设定',
+                    revisionCount: 1,
+                    progress: 10,
+                    initiator: '系统管理员',
+                    startDate: today,
+                    milestones: [
+                        { name: CORE_MILESTONES[0].name, status: 'Active' },
+                        { name: CORE_MILESTONES[1].name, status: 'Pending' },
+                        { name: CORE_MILESTONES[2].name, status: 'Pending' }
+                    ]
+                };
+                mockCases.unshift(newCase);
+                updateAndRenderAll();
+                showMessage(`新流程 ${newCase.id} 已成功启动，版本为 ${newVersion}。`, 'success');
+            }, 1000);
+        }
+
+        function handleCaseAction(caseId, action) {
+            const caseItem = mockCases.find(c => c.id === caseId);
+            if (!caseItem) return;
+
+            if (action === 'ViewKanban') {
+                if (caseItem.id === 1001) {
+                    window.open('index.html', '_blank');
+                    showMessage(`正在打开【${caseItem.name}】的树形看板页面...`, 'info');
+                } else {
+                    showMessage(`模拟跳转到实例 ID ${caseId} 的看板视图。`, 'info');
+                }
+            } else if (action === 'Cancel') {
+                if (confirm(`确定要终止流程实例 ID ${caseId}：【${caseItem.name}】吗？`)) {
+                    caseItem.status = 'Cancelled';
+                    caseItem.currentPhase = '已终止';
+                    caseItem.progress = 0;
+                    caseItem.milestones.forEach(m => m.status = 'Pending');
+                    updateAndRenderAll();
+                    showMessage(`流程实例 ${caseId} 已终止。`, 'Cancelled');
+                }
+            }
+        }
+
+        function viewCaseDetails(caseId) {
+            activeCaseId = caseId;
+            const caseItem = mockCases.find(c => c.id === caseId);
+            if (!caseItem) return;
+
+            document.querySelectorAll('.case-list-item').forEach(row => row.classList.remove('active-case'));
+            const selectedRow = document.getElementById(`case-${caseId}`);
+            if (selectedRow) {
+                selectedRow.classList.add('active-case');
+            }
+
+            showMessage(`已选中实例 ID ${caseId}：【${caseItem.name}】。`, 'info');
+        }
+
+        /** Orchestrates all rendering and KPI updates (Updated for 'All' filter selection) */
+        function updateAndRenderAll(showMsg = false) {
+             updateKPIs(showMsg);
+             renderCaseList();
+
+             const year = document.getElementById('filter-year').value;
+             const company = document.getElementById('filter-company').value;
+             const version = document.getElementById('filter-version').value;
+
+             // Find cases matching the *current* filter settings
+             const currentCases = mockCases.filter(c =>
+                c.year.toString() === year &&
+                (company === 'All' || c.company === company) &&
+                (version === 'All' || c.version === version)
+             );
+
+             // Re-select an active case if the previously selected one is no longer in the filtered list
+             if (currentCases.length > 0 && !currentCases.some(c => c.id === activeCaseId)) {
+                 viewCaseDetails(currentCases[0].id); // Select the first one in the new filter set
+             } else if (currentCases.length === 0) {
+                 activeCaseId = null;
+                 document.querySelectorAll('.case-list-item').forEach(row => row.classList.remove('active-case'));
+             }
+             // If activeCaseId is still in the list, keep it selected.
+        }
+
+
+        // --- Initial Load - UPDATED Defaults ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Default to 2026, All Companies, All Versions
+            document.getElementById('filter-year').value = '2026';
+            document.getElementById('filter-company').value = 'All';
+            document.getElementById('filter-version').value = 'All';
+
+            updateAndRenderAll();
+            // Since we load 'All' cases, ID 1001 is still the designated active case to start.
+            if (mockCases.some(c => c.id === 1001)) {
+                viewCaseDetails(1001);
+            }
+        });
+    </script>
+</body>
+</html>
