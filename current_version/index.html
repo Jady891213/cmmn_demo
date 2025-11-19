@@ -678,7 +678,7 @@
                 const depStatus = depNode ? getEffectiveStatus(depNode) : 'Unknown';
                 // BEGIN - 依赖项文案和颜色更新
                 const statusColor = depStatus === 'Completed' ? 'text-emerald-600' : (depStatus === 'Blocked' ? 'text-slate-600' : 'text-indigo-600');
-                const statusText = depStatus === 'Completed' ? '已达成' : (depStatus === 'Blocked' ? '等待前置' : '待处理'); // 文案更新
+                const statusText = depStatus === 'Completed' ? '已达成' : (depStatus === 'Blocked' ? '待激活' : '待处理'); // 文案更新
                 // END - 依赖项文案和颜色更新
 
                 // 修复：添加 event.stopPropagation() 到依赖项链接，防止其触发 selectPlanNode
