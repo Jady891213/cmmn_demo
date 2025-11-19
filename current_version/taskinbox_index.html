@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BPMN/CMMN 报表任务中心 - 浅色主题</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 引入 Inter 字体并设置背景色 */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Gray-100 Light Background */
+            color: #1f2937; /* Gray-800 Default Text Color */
+        }
+        /* 针对右侧详情栏在小屏幕上进行全屏处理 */
+        .task-detail-container.hidden-mobile {
+            display: none;
+        }
+        @media (min-width: 768px) {
+            .task-detail-container.hidden-mobile {
+                display: flex; /* 确保在桌面端是 flex 布局 */
+            }
+            /* 确保右栏的顶部操作区在滚动时保持可见 */
+            .detail-header-sticky {
+                position: sticky;
+                top: 0;
+                z-index: 10;
+            }
+        }
+        /* Excel 样式模拟 - 适应浅色主题 */
+        .excel-like-table th, .excel-like-table td {
+            border: 1px solid #d1d5db; /* Gray-300 */
+            padding: 8px;
+            white-space: nowrap;
+        }
+        .excel-like-table th {
+            background-color: #e5e7eb; /* Gray-200 */
+            color: #1f2937; /* Gray-800 */
+            font-weight: 600;
+        }
+        .excel-like-table td {
+            background-color: #ffffff; /* White for cell background */
+            color: #374151; /* Gray-700 */
+        }
+        .excel-like-table td[contenteditable="true"] {
+             background-color: #f3f4f6; /* Light gray for editable cells */
+        }
+        .excel-like-table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        /* 确保合并后的主栏在收起状态下只显示图标 */
+        .task-list-collapsed {
+            width: 3rem !important; /* w-12 */
+        }
+        .task-list-expanded {
+            width: 24rem !important; /* w-96 */
+        }
+        /* 表单卡片样式 */
+        .form-card {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+    </style>
+</head>
+<body class="h-screen overflow-hidden">
+
+    <div id="app" class="h-full flex">
+
+        <div id="task-list-container" class="task-list-expanded flex flex-col w-full md:w-96 bg-white border-r border-gray-200 overflow-y-auto transition-[width] duration-300 ease-in-out flex-shrink-0">
+
+            <div id="task-list-header" class="sticky top-0 p-4 bg-white z-20 shadow-md border-b border-gray-200 flex-shrink-0">
+
+                <div class="flex justify-between items-center mb-4" id="task-list-controls">
+                    <h1 id="main-column-title" class="text-xl font-bold text-indigo-600 transition-opacity duration-150">任务与流程中心</h1>
+
+                    <button id="toggle-main-column" onclick="toggleMainColumn()" class="p-1 rounded-full text-gray-400 hover:text-indigo-600 transition duration-150 flex-shrink-0 hidden md:block">
+                        <svg id="collapse-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path></svg>
+                    </button>
+                </div>
+
+                <div id="task-list-filters" class="transition-opacity duration-300">
+
+                    <div class="mb-4">
+                        <label for="process-filter" class="text-xs font-medium uppercase text-gray-500 block mb-1">按流程/案例筛选</label>
+                        <select id="process-filter" onchange="setProcessFilter(this.value)" class="w-full p-2 rounded-lg bg-gray-100 border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 text-sm text-gray-800">
+                            </select>
+                    </div>
+
+                    <div class="flex space-x-2 mb-3">
+                        <button id="tab-pending" onclick="setTaskFilter('Pending')" class="flex-1 p-2 rounded-lg bg-indigo-600 text-white font-semibold text-sm transition duration-150 shadow-md">待办任务</button>
+                        <button id="tab-completed" onclick="setTaskFilter('Completed')" class="flex-1 p-2 rounded-lg bg-gray-200 text-gray-600 font-semibold text-sm hover:bg-gray-300 transition duration-150">已办任务</button>
+                    </div>
+
+                    <input type="text" id="task-search" oninput="renderTaskList()" placeholder="搜索任务标题 / 流程名称..." class="w-full p-2 rounded-lg bg-gray-100 border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 text-sm placeholder-gray-500 text-gray-800">
+                </div>
+            </div>
+
+            <div id="tasks-container" class="flex-grow transition-opacity duration-300">
+                </div>
+        </div>
+
+        <div id="task-detail" class="task-detail-container flex-grow flex-col bg-gray-50 overflow-y-auto relative transition-all duration-300 ease-in-out hidden-mobile">
+            <button id="back-to-inbox" class="md:hidden absolute top-4 left-4 p-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white z-30 shadow-lg">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            </button>
+
+            <div id="detail-content" class="flex flex-col h-full">
+                <div class="flex-grow flex flex-col">
+                    <div class="text-center py-16 text-gray-500" id="initial-message">
+                        <svg class="w-12 h-12 mx-auto mb-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8m-17 4v10a2 2 0 002 2h12a2 2 0 002-2v-10"></path></svg>
+                        <p class="text-xl font-medium">请从左栏选择一个任务进行处理。</p>
+                        <p class="text-sm">任务详情、报表列表和 Excel 报表详情将在此处动态加载。</p>
+                    </div>
+                    <div id="task-data-view" class="h-full w-full hidden flex-col">
+                        <div id="detail-header" class="detail-header-sticky p-6 bg-white rounded-b-lg shadow-lg border-b border-gray-200 flex justify-between items-start">
+
+                            <div class="flex-grow pr-4">
+                                <h2 id="task-title-display" class="text-2xl font-extrabold text-gray-900"></h2>
+                                <p id="task-desc-display" class="text-sm text-gray-500 mt-1"></p>
+                            </div>
+
+                            <div class="flex flex-col sm:flex-row gap-2 mt-1 flex-shrink-0">
+                                <button onclick="handleTaskAction(activeTaskId, 'Complete')" class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition duration-200 flex items-center text-sm">
+                                    <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    完成/提交
+                                </button>
+                                <button onclick="handleTaskAction(activeTaskId, 'Reject')" class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition duration-200 flex items-center text-sm">
+                                    <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    拒绝/退回
+                                </button>
+                                <button onclick="handleTaskAction(activeTaskId, 'Delegate')" class="px-4 py-2 bg-gray-300 text-gray-700 font-semibold rounded-lg shadow-md hover:bg-gray-400 transition duration-200 flex items-center text-sm">
+                                    委派
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="detail-split-container" class="flex flex-grow overflow-hidden pt-4 px-6 pb-6">
+                            <div id="report-nav" class="w-1/4 max-w-xs bg-white p-4 rounded-l-lg overflow-y-auto border-r border-gray-200 shadow-inner flex-shrink-0">
+                                <h3 class="text-lg font-semibold mb-3 text-indigo-600">报表列表</h3>
+
+                                <div class="flex space-x-2 mb-4">
+                                    <select id="year-filter" class="w-1/2 p-2 rounded-lg bg-gray-100 text-sm border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800">
+                                        <option value="2026">2026 年</option>
+                                        <option value="2025" selected>2025 年</option>
+                                    </select>
+                                    <select id="month-filter" class="w-1/2 p-2 rounded-lg bg-gray-100 text-sm border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800">
+                                        <option value="12">12 月</option>
+                                        <option value="11" selected>11 月</option>
+                                        <option value="10">10 月</option>
+                                    </select>
+                                </div>
+                                <div id="report-list-container" class="space-y-2">
+                                    </div>
+                            </div>
+
+                            <div id="report-detail" class="flex-grow bg-white p-6 overflow-auto shadow-lg rounded-r-lg">
+                                <h3 id="report-detail-title" class="text-lg font-semibold mb-4 text-gray-900">请在左侧选择一个报表</h3>
+                                <div id="excel-editor" class="text-sm">
+                                    </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 模拟任务数据
+        const mockTasks = [
+            // Report Task
+            { id: 1, title: "Q4 预算复核及报表填写", process: "财务预算 V2", applicant: "李明", dueDate: "2025-11-17", priority: "High", type: "Report", status: "Pending", content: "请复核并批准2026年度部门预算草案，需填写三个关联报表。", icon: '💸',
+              reports: [
+                  { id: 'R1', name: '部门费用预算表', data: 'Data for R1', active: true },
+                  { id: 'R2', name: '资本支出申请表', data: 'Data for R2', active: false },
+                  { id: 'R3', name: '员工薪酬预测表', data: 'Data for R3', active: false },
+                  { id: 'R4', name: '差旅报销汇总表', data: 'Data for R4', active: false },
+                  { id: 'R5', name: '市场推广费用报表', data: 'Data for R5', active: false }
+              ]
+            },
+            // DataEntry Task (非报表任务, 单一表单)
+            { id: 2, title: "IT资产采购配置表录入", process: "采购请求", applicant: "张华", dueDate: "2025-11-19", priority: "Medium", type: "DataEntry", status: "Pending", content: "需要录入三台新服务器的详细配置和供应商信息。非报表任务。", icon: '💻', reports: [] },
+            // Checklist Task (非报表任务, 简单审核)
+            { id: 3, title: "新员工入职材料清单确认", process: "人力资源入职流程", applicant: "王芳", dueDate: "2025-11-28", priority: "High", type: "Checklist", status: "Pending", content: "确认新员工（陈悦）所有入职材料已提交和归档。工号：HR801。", icon: '👶', reports: [] },
+            // Review Task (非报表任务, 文本输入)
+            { id: 4, title: "合同条款修订反馈", process: "法律审查", applicant: "赵丽", dueDate: "2025-12-01", priority: "Low", type: "Review", status: "Pending", content: "针对销售合同模板的第5条进行法律审查并提出修改意见。", icon: '📝', reports: [] },
+            // Report Task
+            { id: 5, title: "系统故障报告处理及填写", process: "系统事件处理", applicant: "系统管理员", dueDate: "2025-12-05", priority: "High", type: "Report", status: "Pending", content: "SaaS平台核心服务宕机，请立即开始故障处理流程并记录所有步骤，需填写事故报告表。", icon: '🚨',
+              reports: [{ id: 'R6', name: '事故原因分析报告', data: 'Data for R6', active: true }, { id: 'R7', name: '修复操作日志', data: 'Data for R7', active: false }] },
+            // Completed Task
+            { id: 6, title: "2025 Q3 绩效评估提交", process: "人力资源绩效管理", applicant: "李明", dueDate: "2025-10-30", priority: "Medium", type: "Review", status: "Completed", content: "已完成Q3绩效评估的提交。", icon: '⭐', reports: [] },
+        ];
+
+        let activeTaskId = null;
+        let currentFilter = 'Pending';
+        let currentProcessFilter = 'All'; // 流程筛选状态，初始默认值为 'All'
+        let isCollapsed = false; // 折叠状态
+
+        const tasksContainer = document.getElementById('tasks-container');
+        const detailContainer = document.getElementById('task-detail');
+        const detailContent = document.getElementById('detail-content');
+        const initialMessage = document.getElementById('initial-message');
+        const taskDataView = document.getElementById('task-data-view');
+        const taskListContainer = document.getElementById('task-list-container');
+        const mainColumnTitle = document.getElementById('main-column-title');
+        const taskListFilters = document.getElementById('task-list-filters');
+        const collapseIcon = document.getElementById('collapse-icon');
+        const taskListControls = document.getElementById('task-list-controls');
+        const reportNav = document.getElementById('report-nav'); // 报表列表导航栏
+        const reportDetail = document.getElementById('report-detail'); // 报表/表单详情栏
+        const detailSplitContainer = document.getElementById('detail-split-container'); // 详情分割容器
+        const backButton = document.getElementById('back-to-inbox'); // 移动端返回按钮
+        const TODAY = new Date().setHours(0, 0, 0, 0);
+
+        /**
+         * 切换主栏的收起/展开状态
+         */
+        function toggleMainColumn() {
+            isCollapsed = !isCollapsed;
+            if (isCollapsed) {
+                // 1. 主栏: 收缩到边条宽度 w-12
+                taskListContainer.classList.remove('task-list-expanded');
+                taskListContainer.classList.add('task-list-collapsed');
+                // 2. 隐藏内容 (标题, 筛选器, 任务列表)
+                mainColumnTitle.classList.add('hidden'); // 隐藏标题
+                taskListFilters.classList.add('hidden'); // 隐藏筛选器
+                tasksContainer.classList.add('opacity-0', 'pointer-events-none'); // 隐藏列表
+                // 3. 调整控制区布局: 仅显示按钮并居中 (修复点击后无法打开的问题)
+                taskListControls.classList.remove('justify-between', 'mb-4');
+                taskListControls.classList.add('justify-center');
+                // 4. 调整头部 padding
+                taskListHeader.classList.remove('p-4');
+                taskListHeader.classList.add('py-4', 'px-3');
+                // 5. 更改图标为展开 (Chevron Right)
+                collapseIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>`;
+            } else {
+                // 1. 主栏: 恢复宽度 w-96
+                taskListContainer.classList.remove('task-list-collapsed');
+                taskListContainer.classList.add('task-list-expanded');
+                // 2. 显示内容
+                mainColumnTitle.classList.remove('hidden');
+                taskListFilters.classList.remove('hidden');
+                tasksContainer.classList.remove('opacity-0', 'pointer-events-none');
+                // 3. 调整控制区布局: 恢复
+                taskListControls.classList.add('justify-between', 'mb-4');
+                taskListControls.classList.remove('justify-center');
+                // 4. 调整头部 padding
+                taskListHeader.classList.add('p-4');
+                taskListHeader.classList.remove('py-4', 'px-3');
+                // 5. 更改图标为收起 (Chevron Left)
+                collapseIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>`;
+            }
+        }
+
+        /**
+         * 创建任务列表项的 HTML 结构
+         */
+        function createTaskItemHtml(task, isUrgent) {
+            const dueDate = new Date(task.dueDate).setHours(0, 0, 0, 0);
+            const isTodayOrTomorrow = dueDate <= TODAY + (2 * 24 * 60 * 60 * 1000); // 3天内截止
+            const priorityColor = task.priority === 'High' ? 'bg-red-500' : task.priority === 'Medium' ? 'bg-amber-500' : 'bg-gray-400';
+            const urgencyBorder = isUrgent ? 'border-red-400' : 'border-gray-200';
+            const urgencyBg = isUrgent ? 'hover:bg-red-50' : 'hover:bg-gray-100';
+            const dateText = isUrgent ? `<span class="text-red-600 font-semibold">${task.dueDate}</span>` : `<span class="text-gray-500">${task.dueDate}</span>`;
+
+            return `
+                <div id="task-${task.id}" onclick="selectTask(${task.id})" class="task-item flex items-start p-3 border-b ${urgencyBorder} ${urgencyBg} transition duration-150 cursor-pointer">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full ${priorityColor} flex items-center justify-center text-white text-lg font-bold mr-3 mt-1">
+                        ${task.icon}
+                    </div>
+                    <div class="flex-grow min-w-0">
+                        <p class="text-sm font-semibold truncate text-gray-800">${task.title}</p>
+                        <p class="text-xs text-indigo-600 truncate">${task.process}</p>
+                        <div class="flex justify-between items-center mt-1">
+                            <span class="text-xs text-gray-500">${task.applicant} 申请</span>
+                            <span class="text-xs">${dateText}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * 设置任务筛选器 (待办/已办)
+         */
+        function setTaskFilter(filter) {
+            currentFilter = filter;
+            document.getElementById('tab-pending').classList.remove('bg-indigo-600', 'text-white', 'bg-gray-200', 'text-gray-600');
+            document.getElementById('tab-completed').classList.remove('bg-indigo-600', 'text-white', 'bg-gray-200', 'text-gray-600');
+
+            if (filter === 'Pending') {
+                document.getElementById('tab-pending').classList.add('bg-indigo-600', 'text-white', 'shadow-md');
+                document.getElementById('tab-completed').classList.add('bg-gray-200', 'text-gray-600', 'hover:bg-gray-300');
+            } else {
+                document.getElementById('tab-pending').classList.add('bg-gray-200', 'text-gray-600', 'hover:bg-gray-300');
+                document.getElementById('tab-completed').classList.add('bg-indigo-600', 'text-white', 'shadow-md');
+            }
+            renderTaskList();
+        }
+
+        /**
+         * 设置流程筛选器
+         */
+        function setProcessFilter(processName) {
+            currentProcessFilter = processName;
+            renderTaskList();
+        }
+
+        /**
+         * 重新计算流程和 Tab 上的计数
+         */
+        function populateProcessFilter() {
+            const processCounts = { 'All': 0 };
+            const select = document.getElementById('process-filter');
+            select.innerHTML = `<option value="All">所有流程 (${mockTasks.filter(t => t.status === 'Pending').length})</option>`; // Reset options
+            select.value = currentProcessFilter; // Keep selection
+
+            mockTasks.forEach(task => {
+                if (task.status === 'Pending') {
+                    processCounts['All']++;
+                    processCounts[task.process] = (processCounts[task.process] || 0) + 1;
+                }
+            });
+
+            // Populate options with counts
+            Object.keys(processCounts).filter(p => p !== 'All').sort().forEach(process => {
+                const count = processCounts[process];
+                const option = document.createElement('option');
+                option.value = process;
+                option.textContent = `${process} (${count})`;
+                select.appendChild(option);
+            });
+            // Update the "All" option text
+            select.querySelector('option[value="All"]').textContent = `所有流程 (${processCounts['All']})`;
+        }
+
+
+        /**
+         * 渲染任务列表 (根据筛选和搜索条件)
+         */
+        function renderTaskList() {
+            const searchTerm = document.getElementById('task-search').value.toLowerCase();
+            const filteredTasks = mockTasks.filter(task => {
+                const matchesFilter = currentFilter === 'Pending' ? task.status === 'Pending' : task.status === 'Completed';
+                const matchesProcess = currentProcessFilter === 'All' || task.process === currentProcessFilter;
+                const matchesSearch = task.title.toLowerCase().includes(searchTerm) || task.process.toLowerCase().includes(searchTerm);
+                return matchesFilter && matchesProcess && matchesSearch;
+            });
+
+            // 1. 分组处理待办任务
+            const overdueTasks = [];
+            const upcomingTasks = [];
+            const standardTasks = [];
+            const completedTasks = [];
+
+            filteredTasks.forEach(task => {
+                if (task.status === 'Pending') {
+                    const dueDate = new Date(task.dueDate).setHours(0, 0, 0, 0);
+                    if (dueDate < TODAY) {
+                        overdueTasks.push(task);
+                    } else if (dueDate <= TODAY + (3 * 24 * 60 * 60 * 1000)) { // 3天内截止
+                        upcomingTasks.push(task);
+                    } else {
+                        standardTasks.push(task);
+                    }
+                } else {
+                    completedTasks.push(task);
+                }
+            });
+
+            const renderGroup = (tasks, title, isUrgent) => {
+                if (tasks.length === 0) return '';
+                let groupHtml = `<div class="p-2 pt-4 text-xs font-semibold uppercase ${isUrgent ? 'text-red-600' : 'text-gray-500'}">${title} (${tasks.length})</div>`;
+                groupHtml += tasks.map(task => createTaskItemHtml(task, isUrgent)).join('');
+                return groupHtml;
+            };
+
+            // 2. 渲染分组 (根据当前 filter 渲染不同的分组)
+            let allTasksHtml = '';
+            if (currentFilter === 'Pending') {
+                allTasksHtml += renderGroup(overdueTasks, '🚨 已逾期任务', true);
+                allTasksHtml += renderGroup(upcomingTasks, '⏳ 最近截止任务 (3天内)', true);
+                allTasksHtml += renderGroup(standardTasks, '待处理任务', false);
+            } else {
+                // Completed
+                allTasksHtml += renderGroup(completedTasks, '✅ 已办任务', false);
+            }
+
+            tasksContainer.innerHTML = allTasksHtml;
+
+            // 3. 选中状态处理
+            if (activeTaskId) {
+                const activeItem = document.getElementById(`task-${activeTaskId}`);
+                if (activeItem) {
+                    // 浅色主题下的选中样式
+                    activeItem.classList.add('bg-indigo-100', 'border-l-4', 'border-indigo-600');
+                }
+            }
+
+            // 4. 更新流程和状态筛选器上的计数
+            populateProcessFilter();
+            updateTabCounts();
+        }
+
+        /**
+         * 更新待办/已办 Tab 上的任务计数
+         */
+        function updateTabCounts() {
+            const pendingCount = mockTasks.filter(t => t.status === 'Pending').length;
+            const completedCount = mockTasks.filter(t => t.status === 'Completed').length;
+            document.getElementById('tab-pending').textContent = `待办任务 (${pendingCount})`;
+            document.getElementById('tab-completed').textContent = `已办任务 (${completedCount})`;
+        }
+
+
+        /**
+         * 渲染报表导航栏
+         */
+        function renderReportNavigation(task) {
+            const listContainer = document.getElementById('report-list-container');
+            if (!task.reports || task.reports.length === 0) {
+                listContainer.innerHTML = '<p class="text-sm text-gray-500 p-2">此任务没有关联报表。</p>';
+                return;
+            }
+
+            const navHtml = task.reports.map(report => {
+                const activeClass = report.active ? 'bg-indigo-50 border-indigo-600 text-indigo-700 font-semibold' : 'hover:bg-gray-100 border-gray-200 text-gray-700';
+                return `
+                    <div onclick="selectReport(${task.id}, '${report.id}', '${report.name}')" class="p-3 border rounded-lg cursor-pointer transition duration-150 ${activeClass}">
+                        <p class="text-sm">${report.name}</p>
+                    </div>
+                `;
+            }).join('');
+            listContainer.innerHTML = navHtml;
+        }
+
+        /**
+         * 渲染 Excel 报表内容 (模拟)
+         */
+        function renderExcelReport(reportId) {
+            const editorContainer = document.getElementById('excel-editor');
+            let tableData = [];
+            let isEditable = (rowIndex, colIndex, row) => false;
+
+            switch (reportId) {
+                case 'R1': // 部门费用预算表
+                    tableData = [
+                        ['费用类型', '11月预算 (K)', '11月实际 (K)', '12月预测 (K)', '备注'],
+                        ['人力成本', 200, 205, 210, '人员变动'],
+                        ['软件许可费', 50, 48, 50, '已支付'],
+                        ['差旅费用', 30, 35, 40, '待报销'],
+                        ['办公耗材', 10, 8, 12, ''],
+                        ['总计', 290, 296, 312, ''] // 最后一行为总计
+                    ];
+                    // Editable logic for R1: '12月预测 (K)' (index 3) and '备注' (index 4) for non-total rows
+                    isEditable = (rowIndex, colIndex, row) => rowIndex > 0 && rowIndex < tableData.length - 1 && (colIndex === 3 || colIndex === 4);
+                    break;
+                case 'R2': // 资本支出申请表
+                    tableData = [
+                        ['资产名称', '型号', '数量', '单价 (K)', '总价 (K)', '批准状态'],
+                        ['新服务器A', 'R750', 3, 40, 120, '待批准'],
+                        ['高配工作站', 'Z4 G5', 10, 15, 150, '已批准'],
+                        ['网络存储 (NAS)', 'DS920+', 1, 5, 5, '待批准']
+                    ];
+                    isEditable = (rowIndex, colIndex, row) => rowIndex > 0 && (colIndex === 2 || colIndex === 4);
+                    break;
+                case 'R6': // 事故原因分析报告 (Task 5)
+                    tableData = [
+                        ['阶段', '时间', '描述', '责任人'],
+                        ['发现', '2025-12-05 10:00', 'SaaS平台核心服务宕机报警', '监控系统'],
+                        ['定级', '2025-12-05 10:15', 'P1 生产系统完全不可用', '运维主管'],
+                        ['原因分析', '2025-12-05 11:30', '数据库连接池耗尽，是应用层Bug导致循环请求', '开发工程师'],
+                        ['根因', '2025-12-05 12:00', '错误的缓存配置导致递归调用', '架构师'],
+                    ];
+                    // Editable logic for R6: '责任人' (index 3)
+                    isEditable = (rowIndex, colIndex, row) => rowIndex > 0 && colIndex === 3;
+                    break;
+                // ... 其他报表数据和逻辑
+                default:
+                    tableData = [
+                        ['项目', '数据项A', '数据项B', '数据项C', '备注'],
+                        ['一月', 100, 200, 300, ''],
+                        ['二月', 110, 210, 320, ''],
+                        ['三月', 120, 220, 340, ''],
+                    ];
+            }
+
+            let tableHtml = `<table class="excel-like-table"><thead><tr>`;
+            tableData[0].forEach(header => {
+                tableHtml += `<th>${header}</th>`;
+            });
+            tableHtml += `</tr></thead><tbody>`;
+
+            for (let i = 1; i < tableData.length; i++) {
+                tableHtml += `<tr>`;
+                for (let j = 0; j < tableData[i].length; j++) {
+                    const editable = isEditable(i, j, tableData[i]);
+                    const editableAttr = editable ? 'contenteditable="true"' : '';
+                    const highlightClass = editable ? 'text-indigo-600 font-medium' : '';
+                    tableHtml += `<td ${editableAttr} class="${highlightClass}">${tableData[i][j]}</td>`;
+                }
+                tableHtml += `</tr>`;
+            }
+            tableHtml += `</tbody></table>`;
+            editorContainer.innerHTML = tableHtml;
+        }
+
+        /**
+         * 渲染非报表任务的自定义表单 (模拟)
+         */
+        function renderCustomForm(task) {
+            const editorContainer = document.getElementById('excel-editor');
+            let formHtml = `<div class="form-card space-y-4">`;
+
+            if (task.type === 'DataEntry') {
+                // IT资产采购配置表录入
+                formHtml += `
+                    <div>
+                        <label for="vendor" class="block text-sm font-medium text-gray-700">供应商名称</label>
+                        <input type="text" id="vendor" value="XX科技（北京）有限公司" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="server_model" class="block text-sm font-medium text-gray-700">服务器型号/配置</label>
+                        <textarea id="server_model" rows="4" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="E.g., 3x Dell PowerEdge R750, 1TB RAM, 10x1.2TB SSD">${task.content.includes("三台新服务器") ? "3x Dell PowerEdge R750\n1TB RAM\n10x1.2TB SSD" : task.content}</textarea>
+                    </div>
+                    <div class="flex space-x-4">
+                        <div class="flex-1">
+                            <label for="total_cost" class="block text-sm font-medium text-gray-700">总采购成本 (RMB)</label>
+                            <input type="number" id="total_cost" value="125000" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div class="flex-1">
+                            <label for="install_date" class="block text-sm font-medium text-gray-700">预计到货/安装日期</label>
+                            <input type="date" id="install_date" value="2025-12-10" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                    </div>
+                `;
+            } else if (task.type === 'Checklist') {
+                // 新员工入职材料清单确认
+                formHtml += `
+                    <div>
+                        <p class="block text-sm font-medium text-gray-700 mb-2">待确认材料清单 (新员工：陈悦 / 工号：HR801)</p>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="checkbox" checked class="form-checkbox h-5 w-5 text-indigo-600">
+                                <span class="ml-2 text-gray-700">劳动合同原件归档</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" checked class="form-checkbox h-5 w-5 text-indigo-600">
+                                <span class="ml-2 text-gray-700">身份证明复印件</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600">
+                                <span class="ml-2 text-gray-700">入职体检报告</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600">
+                                <span class="ml-2 text-gray-700">社保/公积金账户信息登记表</span>
+                            </label>
+                        </div>
+                    </div>
+                `;
+            } else if (task.type === 'Review') {
+                // 合同条款修订反馈
+                formHtml += `
+                    <div>
+                        <p class="text-sm font-medium text-gray-700 mb-2">合同条款 (第5条) 原文:</p>
+                        <div class="bg-gray-100 p-3 rounded-md border border-gray-300 text-sm text-gray-600 italic mb-4">
+                            "甲方应在收到乙方书面通知后，于七个工作日内完成付款。任何延迟将导致合同终止。"
+                        </div>
+                    </div>
+                    <div>
+                        <label for="review_feedback" class="block text-sm font-medium text-gray-700">法律审查反馈 / 修订意见</label>
+                        <textarea id="review_feedback" rows="6" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="请在此处输入您的审查意见和建议的修订版本...">建议将付款期限修改为 '十个工作日'，并增加不可抗力条款的豁免声明。</textarea>
+                    </div>
+                `;
+            } else {
+                formHtml += `<p class="text-sm text-gray-500">此任务类型为 ${task.type}，没有需要填写的特殊表单。</p>`;
+            }
+
+            formHtml += `</div>`;
+
+            // 统一设置标题
+            document.getElementById('report-detail-title').textContent = `📄 ${task.title} - 详情表单`;
+            editorContainer.innerHTML = formHtml;
+        }
+
+        /**
+         * 选中任务
+         */
+        function selectTask(taskId) {
+            const task = mockTasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            // 1. 移除所有选中样式
+            document.querySelectorAll('.task-item').forEach(item => {
+                item.classList.remove('bg-indigo-100', 'border-l-4', 'border-indigo-600');
+            });
+
+            // 2. 添加当前选中样式
+            const activeItem = document.getElementById(`task-${taskId}`);
+            if (activeItem) {
+                activeItem.classList.add('bg-indigo-100', 'border-l-4', 'border-indigo-600');
+            }
+
+            // 3. 渲染详情
+            renderTaskDetail(task);
+
+            // 4. 移动端切换：显示详情栏，隐藏列表栏
+            if (window.innerWidth < 768) {
+                detailContainer.classList.remove('hidden-mobile');
+                taskListContainer.classList.add('hidden');
+                backButton.onclick = () => {
+                    detailContainer.classList.add('hidden-mobile');
+                    taskListContainer.classList.remove('hidden');
+                };
+            }
+        }
+
+        /**
+         * 渲染任务详情 (右栏)
+         */
+        function renderTaskDetail(task) {
+            activeTaskId = task.id; // 确保 activeTaskId 始终与当前渲染的任务匹配
+            initialMessage.classList.add('hidden'); // 隐藏初始提示
+            taskDataView.classList.remove('hidden');
+
+            // 1. 顶部操作区
+            document.getElementById('task-title-display').textContent = task.title;
+            document.getElementById('task-desc-display').innerHTML = `
+                <span class="font-semibold text-gray-700">${task.process}</span>
+                <span class="mx-2 text-gray-300">|</span>
+                <span class="text-gray-500">截止日期: ${task.dueDate}</span>
+                <span class="mx-2 text-gray-300">|</span>
+                <span class="text-gray-500">优先级: ${task.priority}</span>
+            `;
+
+            // 2. 报表/表单内容区
+            if (task.type === 'Report' && task.reports && task.reports.length > 0) {
+                // 报表任务: 显示报表导航和详情
+                reportNav.classList.remove('hidden');
+                reportDetail.classList.add('rounded-r-lg');
+                reportDetail.classList.remove('rounded-lg');
+                detailSplitContainer.classList.add('flex-row');
+
+                renderReportNavigation(task); // 渲染报表列表
+
+                // 默认选中第一个报表
+                const firstReport = task.reports.find(r => r.active) || task.reports[0];
+                if (firstReport) {
+                     document.getElementById('report-detail-title').textContent = `📝 ${firstReport.name} - 填写/修改`;
+                     renderExcelReport(firstReport.id);
+                }
+
+            } else {
+                // 非报表任务: 隐藏报表导航, 渲染自定义表单
+                reportNav.classList.add('hidden');
+                // 确保详情区域独占整个空间
+                reportDetail.classList.remove('rounded-r-lg');
+                reportDetail.classList.add('rounded-lg');
+                detailSplitContainer.classList.remove('flex-row');
+                renderCustomForm(task); // 渲染自定义表单
+            }
+        }
+
+        /**
+         * 选中报表
+         */
+        function selectReport(taskId, reportId, reportName) {
+            const task = mockTasks.find(t => t.id === taskId);
+            if (task && task.reports) {
+                // 1. 更新选中状态数据
+                task.reports.forEach(r => r.active = (r.id === reportId));
+                // 2. 更新右侧标题和内容
+                document.getElementById('report-detail-title').textContent = `📝 ${reportName} - 填写/修改`;
+                renderExcelReport(reportId); // 模拟加载 Excel 内容
+                // 3. 重新渲染导航以更新选中状态
+                renderReportNavigation(task);
+            }
+        }
+
+        /**
+         * 任务操作 (完成/拒绝/委派) 模拟
+         */
+        function handleTaskAction(taskId, action) {
+             alert(`任务 ID: ${taskId}，执行操作: ${action}`);
+             // 模拟任务完成/拒绝后，应该从列表中移除
+             if (action === 'Complete') {
+                 const taskIndex = mockTasks.findIndex(t => t.id === taskId);
+                 if (taskIndex !== -1) {
+                    mockTasks[taskIndex].status = 'Completed';
+                    activeTaskId = null; // 清空当前选中
+                    initialMessage.classList.remove('hidden'); // 显示初始提示
+                    taskDataView.classList.add('hidden'); // 隐藏详情
+                    renderTaskList(); // 重新渲染列表
+                 }
+             }
+        }
+
+        // 初始加载
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. 确保待办 Tab 选中
+            setTaskFilter('Pending');
+            // 2. 首次渲染列表
+            renderTaskList();
+            // 3. 绑定返回按钮事件 (桌面端隐藏)
+            backButton.onclick = () => {
+                detailContainer.classList.add('hidden-mobile');
+                taskListContainer.classList.remove('hidden');
+            };
+
+            // 4. 新增逻辑: 检查URL参数以支持从看板跳转
+            const urlParams = new URLSearchParams(window.location.search);
+            const kanbanJumpTaskId = urlParams.get('taskId');
+            if (kanbanJumpTaskId) {
+                // 确保 ID 是整数
+                const taskId = parseInt(kanbanJumpTaskId, 10);
+                const taskExists = mockTasks.find(t => t.id === taskId);
+
+                if (taskExists) {
+                    // 立即选中并显示任务详情
+                    selectTask(taskId);
+                    // 确保列表栏显示 (如果是在桌面端)
+                    taskListContainer.classList.remove('hidden');
+                } else {
+                    console.warn(`URL中指定的任务 ID ${taskId} 不存在。`);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
