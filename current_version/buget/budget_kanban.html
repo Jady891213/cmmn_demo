@@ -103,7 +103,7 @@
             <div class="flex space-x-2 flex-shrink-0">
                 <button class="px-3 py-1 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition">打印看板</button>
                 <button class="px-3 py-1 text-sm font-medium text-indigo-600 border border-indigo-600 rounded-md hover:bg-indigo-50 transition">流程图</button>
-                <button class="px-3 py-1 text-sm font-medium text-white bg-amber-500 rounded-md hover:bg-amber-600 transition">撤回流程</button>
+                <button class="px-3 py-1 text-sm font-medium text-amber-500 border border-amber-500 rounded-md hover:bg-amber-50 transition">撤回流程</button>
                 <button class="px-3 py-1 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition">终止流程</button>
             </div>
         </div>
@@ -240,13 +240,13 @@
                 children: [
                     { id: 201, name: '下发编制模板', type: 'Task', progress: 100, startDate: '2025-11-11', endDate: '2025-11-12', owner: '财务部', status: 'Completed' },
                     { id: 202, name: '各部门费用预算提报', type: 'Task', progress: 100, startDate: '2025-11-13', endDate: '2025-11-20', owner: '各部门负责人', status: 'Completed' },
-                    { id: 203, name: '资本支出计划提报', type: 'Task', progress: 100, startDate: '2025-11-21', endDate: '2025-11-28', owner: '技术/运营部', status: 'Completed', dependencies: [202] },
-                    { id: 204, name: '收入预测模型核对', type: 'Task', progress: 100, startDate: '2025-11-29', endDate: '2025-12-05', owner: '市场部', status: 'Completed', dependencies: [202] },
-                    { id: 205, name: '所有部门草案已提报 (里程碑)', type: 'Milestone', progress: 0, startDate: '—', endDate: '—', owner: '系统检查', status: 'Blocked', dependencies: [203, 204] }
+                    { id: 203, name: '【有详情】资本支出计划提报', type: 'Task', progress: 100, startDate: '2025-11-21', endDate: '2025-11-28', owner: '技术/运营部', status: 'Completed', dependencies: [202] },
+                    { id: 204, name: '【有详情】收入预测模型核对', type: 'Task', progress: 100, startDate: '2025-11-29', endDate: '2025-12-05', owner: '市场部', status: 'Completed', dependencies: [202] },
+                    { id: 205, name: '草案已提报 (里程碑)', type: 'Milestone', progress: 0, startDate: '—', endDate: '—', owner: '系统检查', status: 'Blocked', dependencies: [203, 204] }
                 ]
             },
             { id: 300, name: '复核与审批', type: 'Phase', progress: 10, owner: '财务总监', children: [
-                { id: 301, name: '财务初审与汇总', type: 'Task', progress: 10, startDate: '2025-12-06', endDate: '2025-12-15', owner: '财务部', status: 'Pending', dependencies: [205] },
+                { id: 301, name: '【有详情】财务初审与汇总', type: 'Task', progress: 10, startDate: '2025-12-06', endDate: '2025-12-15', owner: '财务部', status: 'Pending', dependencies: [205] },
                 { id: 302, name: '高管委员会审批通过', type: 'Milestone', progress: 0, startDate: '2025-12-16', endDate: '2025-12-20', owner: '高管委', status: 'Blocked', dependencies: [301] }
             ]},
             { id: 400, name: '预算发布与锁定', type: 'Phase', progress: 0, owner: '行政管理', children: [
@@ -499,37 +499,63 @@
             const isSystemTask = node.type === 'SystemTask';
             const isDiscretionary = node.type === 'DiscretionaryTask';
             const isMilestone = node.type === 'Milestone';
-            const isAwaitingRevision = effectiveStatus === 'AwaitingRevision';
-            const isDisabled = effectiveStatus === 'Completed' || effectiveStatus === 'Blocked' || effectiveStatus === 'PhaseClosed';
 
+            // --- 核心优化: 任务完成、阻塞或阶段关闭时隐藏操作按钮 ---
+            const isNotActionable = (
+                effectiveStatus === 'Completed' ||
+                effectiveStatus === 'Blocked' ||
+                effectiveStatus === 'PhaseClosed'
+            );
 
-            if (isSystemTask) {
-                // System tasks only have one action: TriggerSystem
-                return `
-                    <button onclick="event.stopPropagation(); handleTaskAction(${node.id}, 'TriggerSystem')" ${isDisabled ? 'disabled' : ''} class="px-3 py-1 bg-yellow-600 text-white text-sm font-medium rounded-md hover:bg-yellow-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                        <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
-                        ${isSystemTask && effectiveStatus === 'Completed' ? '已触发' : '自动执行'}
-                    </button>
-                `;
-            }
-
+            // 1. 可选任务 (DiscretionaryTask) 逻辑
             if (isDiscretionary) {
-                if (effectiveStatus === 'PhaseClosed') return '—';
+                 if (effectiveStatus === 'Available') {
+                     // 仅在状态为 Available 时显示激活按钮
+                     return `
+                        <button onclick="event.stopPropagation(); openActivationModal(${node.parentPhaseId}, ${node.id}, '${node.name}')" class="px-3 py-1 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition">
+                            <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            激活
+                        </button>
+                    `;
+                 }
+                 // 其他状态 (PhaseClosed, Blocked) 均隐藏
+                 return '—';
+            }
 
-                // Discretionary tasks only have 'Activate' button
+            // 2. 系统任务 (SystemTask) 逻辑
+            if (isSystemTask) {
+                if (isNotActionable) return '—'; // 非活动状态下隐藏
+                // 仅在 Pending/AwaitingRevision 时显示自动执行按钮
                 return `
-                    <button onclick="event.stopPropagation(); openActivationModal(${node.parentPhaseId}, ${node.id}, '${node.name}')" class="px-3 py-1 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition">
-                        <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                        激活
+                    <button onclick="event.stopPropagation(); handleTaskAction(${node.id}, 'TriggerSystem')" class="px-3 py-1 bg-yellow-600 text-white text-sm font-medium rounded-md hover:bg-yellow-700 transition">
+                        <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                        自动执行
                     </button>
                 `;
             }
 
-            // Dropdown menu for standard Tasks/Milestones
-            const isCompleted = effectiveStatus === 'Completed';
+            // 3. 常规任务/里程碑：非活动状态时隐藏
+            if (isNotActionable) {
+                return '—';
+            }
+
+
+            // 4. 里程碑 (Milestone): Active (Pending, AwaitingRevision)
+            if (isMilestone) {
+                // 对于活动状态的里程碑，直接显示 '里程碑完成' 按钮
+                return `
+                    <button onclick="event.stopPropagation(); handleTaskAction(${node.id}, 'Complete')" class="px-3 py-1 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition">
+                        <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        里程碑完成
+                    </button>
+                `;
+            }
+
+            // 5. 常规任务 (Task): Active (Pending, In Progress, AwaitingRevision)
+
             const isPendingApproval = node.id === 301 && effectiveStatus === 'Pending'; // Special check for '财务初审与汇总'
-            const buttonColor = isCompleted ? 'bg-emerald-500' : (isPendingApproval ? 'bg-indigo-600' : 'bg-indigo-500');
-            const buttonText = isCompleted ? '已完成' : (isPendingApproval ? '进行审批' : '执行操作');
+            const buttonColor = isPendingApproval ? 'bg-indigo-600' : 'bg-indigo-500';
+            const buttonText = isPendingApproval ? '进行审批' : '执行操作';
 
             let customAction = '';
             if (isPendingApproval) {
@@ -537,17 +563,19 @@
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     提交审批结果 (必选)
                 </a>`;
-            } else if (!isCompleted && !isAwaitingRevision) {
+            }
+            // 允许 '标记为完成' 在 Pending/AwaitingRevision 状态下显示
+            else {
                  customAction = `<a href="#" onclick="event.stopPropagation(); handleTaskAction(${node.id}, 'Complete')" class="flex items-center px-4 py-2 text-sm text-green-700 hover:bg-green-100 font-semibold" role="menuitem" tabindex="-1">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                     标记为完成
                 </a>`;
             }
 
-            // 使用 action-dropdown-container 和 action-dropdown-menu 类来实现 Z-index 和外部点击收起
+            // Dropdown menu for standard Tasks
             return `
                 <div class="relative inline-block text-left action-dropdown-container">
-                    <button onclick="toggleDropdown(this)" class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-3 py-1 ${buttonColor} text-sm font-medium text-white hover:opacity-80 transition disabled:opacity-50 disabled:cursor-not-allowed" ${isDisabled ? 'disabled' : ''}>
+                    <button onclick="toggleDropdown(this)" class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-3 py-1 ${buttonColor} text-sm font-medium text-white hover:opacity-80 transition">
                         ${buttonText}
                         <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                             <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -627,7 +655,7 @@
             } else if (isDiscretionary) {
                 typeIcon = `<svg class="w-4 h-4 inline-block mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
             } else if (isSystemTask) {
-                typeIcon = `<svg class="w-4 h-4 inline-block mr-2 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>`;
+                typeIcon = `<svg class="w-4 h-4 inline-block mr-2 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-1.756.426-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>`;
             } else {
                 typeIcon = `<svg class="w-4 h-4 inline-block mr-2 ${nameTextColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M10 12h.01"></path></svg>`;
             }
@@ -686,6 +714,12 @@
                     html += renderNodeRow(child, level + 1);
                 });
             }
+
+            if (isPhase && isExpanded && node.discretionaryTasks && node.discretionaryTasks.length > 0) {
+                 node.discretionaryTasks.forEach(dTask => {
+                     html += renderNodeRow(dTask, level + 1);
+                 });
+             }
 
             return html;
         }
