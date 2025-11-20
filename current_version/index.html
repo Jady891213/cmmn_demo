@@ -84,47 +84,64 @@
 <body class="h-screen overflow-hidden">
     <div id="message-box" class="fixed top-4 right-4 z-50 p-4 rounded-lg shadow-xl text-white transform transition-all duration-300 translate-x-full opacity-0"></div>
 
-    <div id="app" class="h-full flex">
+    <div id="app" class="h-full flex flex-col">
 
-        <div class="w-full md:w-2/3 flex-shrink-0 bg-white border-r border-gray-200 flex flex-col custom-scrollbar overflow-y-auto">
-            <div class="p-4 border-b border-gray-200 sticky top-0 bg-white z-10 shadow-sm">
+        <div id="main-header" class="flex flex-shrink-0 bg-white border-b border-gray-200 shadow-sm">
+            <div class="w-full md:w-2/3 p-4 border-r border-gray-200">
                 <h1 class="text-xl font-bold text-indigo-600">
                     <svg class="w-6 h-6 inline-block mr-2 align-top" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2m-7 0h2"></path></svg>
                     2026 年度预算编制 - CMMN 案例流概览
                 </h1>
-                <p class="text-sm text-gray-500 mt-1">流程灵活且事件驱动。阶段驳回后可重新打开并追踪历史版本。</p>
+                <p class="text-sm text-gray-500 mt-1">
+                    <span class="mr-4">发起人: **系统管理员**</span>
+                    <span class="mr-4">发起时间: 2025-11-01 10:30:00</span>
+                    <span class="mr-4">当前版本: V1</span>
+                </p>
             </div>
 
-            <div class="flex-grow overflow-y-auto">
-                <table class="tree-table min-w-full divide-y divide-gray-200">
-                    <thead class="sticky top-0">
-                        <tr>
-                            <th class="w-1/3">计划项/任务名称</th>
-                            <th class="w-1/12">责任人</th>
-                            <th class="w-1/6">进度</th>
-                            <th class="w-1/6">截止日期</th>
-                            <th class="w-1/6">依赖</th>
-                            <th class="w-1/12 text-center">操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="plan-flow-table-body" class="bg-white divide-y divide-gray-100">
-                        </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="task-detail-pane" class="w-full md:w-1/3 flex-shrink-0 bg-white border-l border-gray-200 flex flex-col custom-scrollbar overflow-y-auto shadow-lg">
-            <div class="p-6 border-b border-gray-200 sticky top-0 bg-gray-50 z-10">
-                <h2 class="text-xl font-bold text-gray-800">计划项详情</h2>
-            </div>
-            <div id="task-detail-content" class="flex-grow p-4 bg-white">
-                <div class="p-10 text-center text-gray-500">
-                    <svg class="w-10 h-10 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <p>请从左侧表格中选择一个计划项查看详情。</p>
+            <div class="w-full md:w-1/3 p-4">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-gray-800">计划项详情</h2>
+                    <div class="flex space-x-2 flex-shrink-0">
+                        <button class="px-3 py-1 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition">打印看板</button>
+                        <button class="px-3 py-1 text-sm font-medium text-indigo-600 border border-indigo-600 rounded-md hover:bg-indigo-50 transition">流程图</button>
+                        <button class="px-3 py-1 text-sm font-medium text-white bg-amber-500 rounded-md hover:bg-amber-600 transition">撤回流程</button>
+                        <button class="px-3 py-1 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition">终止流程</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+        <div class="flex-grow flex custom-scrollbar overflow-hidden">
+
+            <div class="w-full md:w-2/3 flex-shrink-0 bg-white border-r border-gray-200 flex flex-col custom-scrollbar overflow-y-auto">
+                <div class="flex-grow overflow-y-auto">
+                    <table class="tree-table min-w-full divide-y divide-gray-200">
+                        <thead class="sticky top-0">
+                            <tr>
+                                <th class="w-1/3">计划项/任务名称</th>
+                                <th class="w-1/12">责任人</th>
+                                <th class="w-1/6">进度</th>
+                                <th class="w-1/6">截止日期</th>
+                                <th class="w-1/6">依赖</th>
+                                <th class="w-1/12 text-center">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="plan-flow-table-body" class="bg-white divide-y divide-gray-100">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="task-detail-pane" class="w-full md:w-1/3 flex-shrink-0 bg-white border-l border-gray-200 flex flex-col custom-scrollbar overflow-y-auto shadow-lg">
+                <div id="task-detail-content" class="flex-grow p-4 bg-white">
+                    <div class="p-10 text-center text-gray-500">
+                        <svg class="w-10 h-10 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <p>请从左侧表格中选择一个计划项查看详情。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
 
     <div id="activation-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 z-50 flex items-center justify-center hidden">
         <div class="bg-white rounded-lg shadow-2xl w-full max-w-lg p-6">
@@ -485,32 +502,14 @@
 
             // Step 2: Milestone Dependency Logic
             // If it's a Milestone that was initialized as 'Blocked' (like 205),
-            // but its dependencies are now met (we reached here),
-            // we should treat its effective status as 'Pending' (Ready).
-            if (node.type === 'Milestone' && node.status === 'Blocked') {
+            // but its dependencies are now met (we reached here because isBlockedByDependencies is false),
+            // its effective status should be Pending (ready to be completed/checked).
+            if (node.type === 'Milestone' && node.status === 'Blocked' && !isBlockedByDependencies) {
                  return 'Pending';
             }
 
-            // Step 3: Phase status calculation (handled by calculateAggregateProgress, we trust its result here)
-            if (node.type === 'Phase' && node.status !== 'Completed') {
-                return node.status;
-            }
 
-            // Step 4: For Tasks/Discretionary tasks, return the stored status if not blocked
-            return node.status;
-        }
-
-        /**
-         * Toggles the expansion/collapse state of a Phase node.
-         */
-        function toggleExpansion(id) {
-            if (expandedNodes.has(id)) {
-                expandedNodes.delete(id);
-            } else {
-                expandedNodes.add(id);
-            }
-            renderTreeTable();
-            selectPlanNode(activeNodeId, false); // Keep the current selection highlighted
+            return node.status || 'Draft';
         }
 
         /**
@@ -526,14 +525,13 @@
                 return allNodesMap.get(node.parentPhaseId);
             }
 
-            // For regular tasks, use the recursive search
+            // For regular tasks, use the recursive search function
             function find(nodes, targetId, parent = null) {
                 for (const node of nodes) {
                     if (node.id === targetId) {
                         // 找到了常规任务/里程碑
                         return parent;
                     }
-
                     if (node.children) {
                         // 如果当前节点是 Phase，则它成为其 children 的潜在 parent
                         const newParent = node.type === 'Phase' ? node : parent;
@@ -543,6 +541,7 @@
                 }
                 return null;
             }
+
             // 从整个树的根开始搜索
             // Note: This won't find discretionary tasks if they are not active (i.e. not in children list)
             return find(budgetPlanTree, nodeId, null);
@@ -555,87 +554,82 @@
          */
         function renderActionMenu(node, effectiveStatus) {
             if (node.type === 'Phase') return '—';
+
             const isSystemTask = node.type === 'SystemTask';
             const isDiscretionary = node.type === 'DiscretionaryTask';
-
+            const isMilestone = node.type === 'Milestone';
+            const isAwaitingRevision = effectiveStatus === 'AwaitingRevision';
             const isDisabled = effectiveStatus === 'Completed' || effectiveStatus === 'Blocked' || effectiveStatus === 'PhaseClosed';
+
 
             if (isSystemTask) {
                 // System tasks only have one action: TriggerSystem
                 return `
-                    <button onclick="event.stopPropagation(); handleTaskAction(${node.id}, 'SystemExecute')" ${isDisabled ? 'disabled' : ''} class="px-3 py-1 bg-blue-500 text-white text-xs font-semibold rounded-md hover:bg-blue-600 transition disabled:bg-gray-400 disabled:cursor-not-allowed">
-                        <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10h16V7M4 7h16M4 7L12 3l8 4M12 3v18"></path></svg>
-                        ${effectiveStatus === 'Completed' ? '已执行' : '系统执行'}
+                    <button onclick="event.stopPropagation(); handleTaskAction(${node.id}, 'TriggerSystem')" ${isDisabled ? 'disabled' : ''} class="px-3 py-1 bg-yellow-600 text-white text-sm font-medium rounded-md hover:bg-yellow-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                        ${isSystemTask && effectiveStatus === 'Completed' ? '已触发' : '自动执行'}
                     </button>
                 `;
             }
 
-            if (isDisabled && effectiveStatus === 'Blocked') {
-                 // 更新 Blocked 状态文案
-                 return '<span class="text-sm text-gray-400">等待前置</span>';
-            }
-
             if (isDiscretionary) {
-                 if (effectiveStatus === 'PhaseClosed') {
-                    return '<span class="text-sm text-gray-400">阶段已完成</span>';
-                 }
+                if (effectiveStatus === 'PhaseClosed') return '—';
 
-                 if (effectiveStatus === 'Available') {
-                     const parentPhase = allNodesMap.get(node.parentPhaseId); // Use direct lookup
-                     // Check if phase is completed for a fallback
-                     const phaseCompleted = parentPhase && parentPhase.status === 'Completed';
-
-                     // If phase is completed, the effectiveStatus should have been PhaseClosed,
-                     // but as a fallback/safety, we check again
-                     if (phaseCompleted) return '<span class="text-sm text-gray-400">阶段已完成</span>';
-
-                     // Enabled Activation button
-                     return `
-                        <button onclick="event.stopPropagation(); showActivationModal(${node.parentPhaseId}, ${node.id}, '${node.name}')" class="px-3 py-1 bg-green-500 text-white text-xs font-semibold rounded-md hover:bg-green-700 transition">
-                            <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            激活
-                        </button>
-                    `;
-                 }
+                // Discretionary tasks only have 'Activate' button
+                return `
+                    <button onclick="event.stopPropagation(); openActivationModal(${node.parentPhaseId}, ${node.id}, '${node.name}')" class="px-3 py-1 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition">
+                        <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        激活
+                    </button>
+                `;
             }
-
 
             // Dropdown menu for standard Tasks/Milestones
             const isCompleted = effectiveStatus === 'Completed';
-            const buttonColor = isCompleted ? 'bg-emerald-500' : 'bg-indigo-500';
-            const buttonText = isCompleted ? '已完成' : '执行操作';
+            const isPendingApproval = node.id === 301 && effectiveStatus === 'Pending'; // Special check for '财务初审与汇总'
+            const buttonColor = isCompleted ? 'bg-emerald-500' : (isPendingApproval ? 'bg-indigo-600' : 'bg-indigo-500');
+            const buttonText = isCompleted ? '已完成' : (isPendingApproval ? '进行审批' : '执行操作');
+
+            let customAction = '';
+            if (isPendingApproval) {
+                customAction = `<a href="#" onclick="event.stopPropagation(); openApprovalModal(${node.id}, '${node.name}')" class="flex items-center px-4 py-2 text-sm text-white bg-indigo-600 hover:bg-indigo-700 font-semibold" role="menuitem" tabindex="-1">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    提交审批结果 (必选)
+                </a>`;
+            } else if (!isCompleted && !isAwaitingRevision) {
+                 customAction = `<a href="#" onclick="event.stopPropagation(); handleTaskAction(${node.id}, 'Complete')" class="flex items-center px-4 py-2 text-sm text-green-700 hover:bg-green-100 font-semibold" role="menuitem" tabindex="-1">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    标记为完成
+                </a>`;
+            }
 
             return `
                 <div class="relative inline-block text-left" x-data="{ open: false }">
-                    <button onclick="event.stopPropagation(); this.nextElementSibling.classList.toggle('hidden')" class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-3 py-1 ${buttonColor} text-sm font-medium text-white hover:opacity-80 transition">
+                    <button onclick="event.stopPropagation(); this.nextElementSibling.classList.toggle('hidden')" class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-3 py-1 ${buttonColor} text-sm font-medium text-white hover:opacity-80 transition disabled:opacity-50 disabled:cursor-not-allowed" ${isDisabled ? 'disabled' : ''}>
                         ${buttonText}
                         <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                             <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                         </svg>
                     </button>
-                    <div class="hidden origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none z-20" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+
+                    <div class="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none hidden" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
                         <div class="py-1" role="none">
-                            <a href="#" onclick="event.preventDefault(); event.stopPropagation(); handleRowAction(${node.id}, 'OpenForm')" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                ${isCompleted ? '查看结果' : '进入表单/数据'}
+                            ${customAction}
+                            <a href="#" onclick="event.stopPropagation(); handleTaskAction(${node.id}, 'OpenForm')" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                ${isMilestone ? '查看检查点数据' : '进入表单界面'}
                             </a>
-                        </div>
-                        <div class="py-1" role="none">
-                            <a href="#" onclick="event.preventDefault(); event.stopPropagation(); handleTaskAction(${node.id}, 'Complete')" ${isCompleted ? 'class="hidden"' : 'class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"'} role="menuitem" tabindex="-1">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                确认完成
-                            </a>
-                            <a href="#" onclick="event.preventDefault(); event.stopPropagation(); handleRowAction(${node.id}, 'Assign')" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">
+                            <a href="#" onclick="event.stopPropagation(); handleTaskAction(${node.id}, 'Assign')" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                                分派任务
-                            </a>
-                             <a href="#" onclick="event.preventDefault(); event.stopPropagation(); handleRowAction(${node.id}, 'Comment')" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-                                评论
+                                重新分派责任人
                             </a>
                         </div>
                         <div class="py-1" role="none">
-                            <a href="#" onclick="event.preventDefault(); event.stopPropagation(); handleRowAction(${node.id}, 'ViewLog')" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">
+                            <a href="#" onclick="event.stopPropagation(); handleTaskAction(${node.id}, 'Comment')" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                                评论与沟通
+                            </a>
+                            <a href="#" onclick="event.stopPropagation(); handleTaskAction(${node.id}, 'ViewLog')" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
                                 查看日志
                             </a>
@@ -644,7 +638,6 @@
                 </div>
             `;
         }
-
 
         /**
          * Renders the single row for a node in the tree table.
@@ -668,88 +661,75 @@
             } else if (isRevision) {
                 rowClass += ' row-revision';
             } else if (isDiscretionary && isPhaseClosed) {
-                 rowClass += ' row-discretionary-disabled';
+                rowClass += ' row-discretionary-disabled';
             }
 
+            // Dependencies Text (with links)
+            const dependenciesHtml = node.dependencies && node.dependencies.length > 0
+                ? node.dependencies.map(depId => {
+                    const depNode = allNodesMap.get(depId);
+                    const depStatus = depNode ? getEffectiveStatus(depNode) : 'Unknown';
+                    const statusColor = depStatus === 'Completed' ? 'text-emerald-600' : 'text-slate-600';
+                    const statusText = depStatus === 'Completed' ? '已达成' : '等待前置';
+                    return `<button onclick="event.stopPropagation(); selectPlanNode(${depId})" class="text-xs hover:underline text-left block"><span class="font-medium text-gray-700">${depNode ? depNode.name : `ID:${depId}`}</span> <span class="${statusColor} ml-2 font-medium">${statusText}</span></button>`;
+                }).join('')
+                : '无依赖';
 
-            // Dependencies Text (with link to dependency node)
-            const dependenciesHtml = node.dependencies ? node.dependencies.map(depId => {
-                const depNode = allNodesMap.get(depId);
-                const depStatus = depNode ? getEffectiveStatus(depNode) : 'Unknown';
-                // BEGIN - 依赖项文案和颜色更新
-                const statusColor = depStatus === 'Completed' ? 'text-emerald-600' : (depStatus === 'Blocked' ? 'text-slate-600' : 'text-indigo-600');
-                const statusText = depStatus === 'Completed' ? '已达成' : (depStatus === 'Blocked' ? '待激活' : '待处理'); // 文案更新
-                // END - 依赖项文案和颜色更新
+            // Phase/Task/Milestone Name Text Color
+            const nameTextColor = isCompleted ? 'text-gray-400' : 'text-gray-700';
 
-                // 修复：添加 event.stopPropagation() 到依赖项链接，防止其触发 selectPlanNode
-                return `<a href="#" onclick="event.preventDefault(); event.stopPropagation(); selectPlanNode(${depId}, true);" class="inline-block text-xs font-medium ${statusColor} hover:underline">${depNode ? depNode.name : `ID:${depId}`} (${statusText})</a>`;
-            }).join('<br>') : '—';
-
-
-            // Indentation and Icon
-            const padding = (level * 1.5) + 'rem';
-            let typeIcon;
+            // Type Icon
+            let typeIcon = '';
             if (isPhase) {
-                typeIcon = isExpanded
-                    ? `<svg class="w-4 h-4 inline-block mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>`
-                    : `<svg class="w-4 h-4 inline-block mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>`;
+                // Phase Icon changed to a folder
+                typeIcon = `<svg class="w-4 h-4 inline-block mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>`;
             } else if (isMilestone) {
-                // FIX: Milestone Icon changed to Flag
-                typeIcon = `<svg class="w-4 h-4 inline-block mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6H7a2 2 0 01-2 2h-1z"></path></svg>`;
+                // Milestone Icon
+                typeIcon = `<svg class="w-4 h-4 inline-block mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.636-4.364a9 9 0 11-12.728 0 9 9 0 0112.728 0z"></path></svg>`;
+            } else if (isRevision) {
+                // Revision Icon (Amber alert icon)
+                 typeIcon = `<svg class="w-4 h-4 inline-block mr-2 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.394 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
             } else if (isDiscretionary) {
                 typeIcon = `<svg class="w-4 h-4 inline-block mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
             } else if (isSystemTask) {
                 // FIX: SystemTask Icon changed to Gear/Automation
                 typeIcon = `<svg class="w-4 h-4 inline-block mr-2 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>`;
-            }
-            else { // Task
-                typeIcon = `<svg class="w-4 h-4 inline-block mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>`;
-            }
-
-            let html = `<tr id="node-${node.id}" class="${rowClass}" onclick="selectPlanNode(${node.id}, false);">`;
-
-            // Name Column
-            html += `<td class="py-3 px-4 text-sm font-medium whitespace-nowrap" style="padding-left: ${padding};">`;
-            const nameTextColor = isBlocked || isPhaseClosed ? 'text-gray-400' : 'text-gray-700';
-            html += `<div class="flex items-center">`;
-
-
-            if (isPhase) {
-                // Phase is clickable to expand/collapse
-                // 修复：添加 event.stopPropagation() 到 Phase 展开/收起按钮
-                html += `<a href="#" onclick="event.preventDefault(); event.stopPropagation(); toggleExpansion(${node.id})" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-semibold">`;
             } else {
-                // Task/Milestone/Discretionary
-                html += `<span class="inline-flex items-center ${nameTextColor}">`;
+                // Default Task Icon
+                typeIcon = `<svg class="w-4 h-4 inline-block mr-2 ${nameTextColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M10 12h.01"></path></svg>`;
             }
 
-            html += `
-                ${typeIcon}
-                ${node.name}
-                ${isDiscretionary ? '<span class="ml-2 px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-700 font-semibold">可选任务</span>' : ''}
-                ${isPhase && node.repetition ? '<span class="ml-2 px-2 py-0.5 text-xs rounded-full bg-amber-100 text-amber-700 font-semibold">CMMN Looped</span>' : ''}
-            `;
-            // Remove discretionary tag color when disabled
-            if (isDiscretionary && isPhaseClosed) {
-                 html = html.replace('bg-blue-100 text-blue-700', 'bg-gray-100 text-gray-400');
-            }
+            let html = `<tr data-node-id="${node.id}" class="${rowClass}" onclick="selectPlanNode(${node.id})">`;
 
-
+            // 1. Name Column (W-1/3)
+            html += `<td class="py-3 px-4 text-sm font-medium whitespace-nowrap ${nameTextColor}">`;
+            // Indentation
+            html += `<div style="padding-left: ${level * 1.5}rem;" class="flex items-center">`;
+            // Expansion Toggle (only for Phases)
             if (isPhase) {
-                html += `</a>`;
+                html += `<span onclick="event.stopPropagation(); toggleExpand(${node.id})" class="mr-2 text-gray-400 hover:text-gray-600">
+                            <svg class="w-4 h-4 inline-block transform ${isExpanded ? 'rotate-90' : 'rotate-0'}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                         </span>`;
             } else {
-                html += `</span>`;
+                html += `<span style="width: 1.5rem;"></span>`; // Spacer for alignment
             }
+            // Icon and Name
+            html += `${typeIcon} ${node.name}`;
             html += `</div></td>`;
 
-            // Owner Column
-            html += `<td class="py-3 px-4 text-sm whitespace-nowrap ${nameTextColor}">${node.owner || '—'}</td>`;
+            // 2. Owner Column (W-1/12)
+            html += `<td class="py-3 px-4 text-sm whitespace-nowrap text-gray-600">${node.owner || '待定'}</td>`;
 
-            // Progress Column
+            // 3. Progress/Status Column (W-1/6)
             html += `<td class="py-3 px-4 text-sm w-32">`;
+
             if (isDiscretionary && isPhaseClosed) {
-                 html += `<div class="mt-1">${getStatusTag('PhaseClosed', node.id)}</div>`;
+                html += `<div class="mt-1">${getStatusTag('PhaseClosed', node.id)}</div>`;
+            } else if (isDiscretionary) {
+                 // Discretionary tasks only show the status tag
+                 html += `<div class="mt-1">${getStatusTag(effectiveStatus, node.id)}</div>`;
             } else {
+                // Progress Bar and Status Tag for Task/Milestone/Phase
                 html += `<div class="flex items-center space-x-2">
                             <div class="w-full bg-gray-200 rounded-full h-2.5">
                                 ${isMilestone ? `
@@ -761,169 +741,140 @@
                             <span class="text-xs font-medium text-gray-700 w-8 text-right">${node.progress || 0}%</span>
                         </div>
                         <div class="mt-1">${getStatusTag(effectiveStatus, node.id)}</div>
-                    `;
+                        `;
             }
             html += `</td>`;
 
-            // Due Date Column
+            // 4. Due Date Column (W-1/6)
             const today = new Date().setHours(0, 0, 0, 0);
             const dueDate = node.endDate ? new Date(node.endDate).setHours(0, 0, 0, 0) : null;
             const isOverdue = !isCompleted && dueDate && dueDate < today;
             html += `<td class="py-3 px-4 text-sm whitespace-nowrap ${isOverdue ? 'text-red-600 font-semibold' : nameTextColor}">${node.endDate || '—'}</td>`;
 
-            // Dependencies Column
+            // 5. Dependencies Column (W-1/6)
             html += `<td class="py-3 px-4 text-sm whitespace-normal text-gray-600 w-40">${dependenciesHtml}</td>`;
 
-            // Action Column
-            html += `<td class="py-3 px-4 text-center whitespace-nowrap">${renderActionMenu(node, effectiveStatus)}</td>`;
+            // 6. Action Column (W-1/12)
+            html += `<td class="py-3 px-4 text-center text-sm whitespace-nowrap">${renderActionMenu(node, effectiveStatus)}</td>`;
 
             html += `</tr>`;
 
-            // Recursively render children if expanded and not a discretionary task
+            // Recursively render children if expanded
             if (isPhase && isExpanded && node.children) {
                 node.children.forEach(child => {
                     html += renderNodeRow(child, level + 1);
                 });
             }
 
-            // Render discretionary tasks if applicable
-            if (isPhase && isExpanded && node.discretionaryTasks) {
-                node.discretionaryTasks.forEach(dTask => {
-                    // Pass the parent phase ID to the discretionary task for status check
-                    dTask.parentPhaseId = node.id;
-                    html += renderNodeRow(dTask, level + 1);
-                });
-            }
-
             return html;
         }
 
-
         /**
-         * Renders the detail pane for the selected node.
+         * Renders the details pane content for the selected node.
          */
-        function selectPlanNode(id, scrollToRow = true) {
-            const node = allNodesMap.get(id);
-            if (!node) return;
-
-            // 1. Update Active State
-            const prevActiveRow = document.querySelector('.row-active');
-            if (prevActiveRow) {
-                prevActiveRow.classList.remove('row-active');
-            }
-            const newActiveRow = document.getElementById(`node-${id}`);
-            if (newActiveRow) {
-                newActiveRow.classList.add('row-active');
-                activeNodeId = id;
-                if (scrollToRow) {
-                    newActiveRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            } else {
-                 // If row is not visible (collapsed phase), we still update activeNodeId
-                 activeNodeId = id;
+        function renderDetailPane(node) {
+            if (!node) {
+                document.getElementById('task-detail-content').innerHTML = `
+                    <div class="p-10 text-center text-gray-500">
+                        <svg class="w-10 h-10 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <p>请从左侧表格中选择一个计划项查看详情。</p>
+                    </div>
+                `;
+                return;
             }
 
-            const detailContent = document.getElementById('task-detail-content');
             const effectiveStatus = getEffectiveStatus(node);
             const isCompleted = effectiveStatus === 'Completed';
+            const dependenciesHtml = node.dependencies && node.dependencies.length > 0
+                ? node.dependencies.map(depId => {
+                    const depNode = allNodesMap.get(depId);
+                    const depStatus = depNode ? getEffectiveStatus(depNode) : 'Unknown';
+                    const statusColor = depStatus === 'Completed' ? 'text-emerald-600' : 'text-slate-600';
+                    const statusText = depStatus === 'Completed' ? '已达成' : '等待前置';
+                    return `<div class="flex justify-between text-sm text-gray-700"><span>${depNode ? depNode.name : `ID:${depId}`}</span><span class="${statusColor} font-medium">${statusText}</span></div>`;
+                }).join('') : '<p class="text-sm text-gray-500">无前置依赖项。</p>';
 
-            // 2. Render Detail Content
             let detailHtml = '';
 
-            // Common Details
-            const dependenciesHtml = node.dependencies ? node.dependencies.map(depId => {
-                const depNode = allNodesMap.get(depId);
-                const depStatus = depNode ? getEffectiveStatus(depNode) : 'Unknown';
-                // 更新 detail pane 里的依赖项文案和颜色
-                const statusColor = depStatus === 'Completed' ? 'text-emerald-600' : 'text-slate-600';
-                const statusText = depStatus === 'Completed' ? '已达成' : '等待前置';
-                return `<div class="flex justify-between text-sm text-gray-700"><span>${depNode ? depNode.name : `ID:${depId}`}</span><span class="${statusColor} font-medium">${statusText}</span></div>`;
-            }).join('') : '<p class="text-sm text-gray-500">无前置依赖项。</p>';
-
             const commonDetails = `
-                <p class="text-gray-700"><strong>节点类型:</strong> ${node.type === 'Phase' ? '阶段 (Phase)' : (node.type === 'Milestone' ? '里程碑 (Milestone)' : (node.type === 'SystemTask' ? '系统任务 (SystemTask)' : '常规任务 (Task)'))}</p>
-                <p class="text-gray-700"><strong>责任人:</strong> ${node.owner}</p>
-                <p class="text-gray-700"><strong>计划时间:</strong> ${node.startDate || '—'} - ${node.endDate || '—'}</p>
-
-                <div class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <p class="text-sm text-gray-600 font-medium mb-2 border-b pb-1">前置依赖项:</p>
-                    ${dependenciesHtml}
-                </div>
+                 <p class="text-gray-700"><strong>节点类型:</strong> ${node.type === 'Phase' ? '阶段 (Phase)' : (node.type === 'Milestone' ? '里程碑 (Milestone)' : (node.type === 'SystemTask' ? '系统任务 (SystemTask)' : '常规任务 (Task)'))}</p>
+                 <p class="text-gray-700"><strong>责任人:</strong> ${node.owner}</p>
+                 <p class="text-gray-700"><strong>计划时间:</strong> ${node.startDate || '—'} - ${node.endDate || '—'}</p>
+                 <div class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                     <p class="text-sm text-gray-600 font-medium mb-2 border-b pb-1">前置依赖项:</p>
+                     ${dependenciesHtml}
+                 </div>
             `;
+
 
             // 3. Phase Details (Stage)
             if (node.type === 'Phase') {
-                const allTasks = node.children.filter(c => c.type === 'Task' || c.type === 'SystemTask' || c.type === 'DiscretionaryTask');
+                const allTasks = (node.children || []).filter(c => c.type !== 'DiscretionaryTask'); // Only count regular tasks/system tasks/milestones
                 const totalTasks = allTasks.length;
-                // Since progress is calculated recursively, we just read it.
                 const completionProgress = node.progress;
+                // Calculate based on calculated aggregate progress, which is the average progress of leaf nodes.
                 const completedTasks = Math.round(totalTasks * (completionProgress / 100));
 
                 // Instance history
                 const currentInstances = stageInstances[node.id] || [];
                 const historyHtml = currentInstances.map((instance, index) => {
-                    const statusColor = instance.status === 'Completed' ? 'text-emerald-600' : 'text-indigo-600';
+                    const statusColor = instance.status === 'Completed' ? 'text-emerald-600' : (instance.status === 'AwaitingRevision' ? 'text-amber-600' : 'text-indigo-600');
+                    const instanceStatusText = instance.status === 'AwaitingRevision' ? '驳回修订' : (instance.status === 'Completed' ? '已完成' : '进行中');
+                    const instanceComment = instance.comment ? `<p class="text-xs text-gray-500 mt-1">${instance.comment}</p>` : '';
                     return `
-                        <div class="mb-2 p-2 border-b last:border-b-0">
-                            <span class="font-semibold ${statusColor}">V${instance.instance}</span>:
-                            <span class="text-sm text-gray-700">${instance.comment}</span>
-                            <span class="text-xs text-gray-400">(${new Date(instance.timestamp).toLocaleDateString()})</span>
+                        <div class="mb-2 p-2 rounded-md ${instance.status === 'AwaitingRevision' ? 'bg-amber-50 border border-amber-200' : 'bg-gray-50 border border-gray-200'}">
+                            <span class="font-semibold text-sm ${statusColor}">版本 ${index + 1} - ${instanceStatusText}</span>
+                            <span class="text-xs text-gray-500 ml-3">${new Date(instance.timestamp).toLocaleDateString()}</span>
+                            ${instanceComment}
                         </div>
                     `;
-                }).reverse().join(''); // Show latest first
+                }).join('');
 
-
-                // Discretionary Task list
-                const discretionaryHtml = node.discretionaryTasks ? node.discretionaryTasks.map(dTask => {
-                    // Check effective status again
-                    dTask.parentPhaseId = node.id;
-                    const dStatus = getEffectiveStatus(dTask);
-                    const isClosed = dStatus === 'PhaseClosed';
-
-                    const dColor = isClosed ? 'bg-gray-100 text-gray-400' : (dStatus === 'Available' ? 'bg-blue-100 text-blue-700' : (dStatus === 'Completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700'));
-                    const dText = isClosed ? '已禁用' : dStatus;
-
+                // Discretionary tasks list
+                const discretionaryHtml = (node.discretionaryTasks || []).map(dTask => {
                     return `
-                        <li class="flex justify-between items-center py-1">
-                            <span class="text-gray-700 text-sm ${isClosed ? 'line-through' : ''}">${dTask.name}</span>
-                            <span class="px-2 py-0.5 text-xs rounded-full font-semibold ${dColor}">${dText}</span>
+                        <li class="p-2 border-b last:border-b-0 flex justify-between items-center">
+                            <span class="text-gray-700">${dTask.name}</span>
+                            ${renderActionMenu(dTask, dTask.status)}
                         </li>
                     `;
-                }).join('') : '<p class="text-sm text-gray-500">无可选任务。</p>';
+                }).join('');
+
 
                 detailHtml = `
-                    <h3 class="text-2xl font-bold text-indigo-600 mb-2">${node.name}</h3>
+                    <h3 class="text-2xl font-bold ${isCompleted ? 'text-emerald-600' : 'text-indigo-600'} mb-2">${node.name}</h3>
                     <div class="flex items-center space-x-3 mb-6">
                         ${getStatusTag(effectiveStatus, node.id)}
                         <span class="text-sm text-gray-500">阶段 (Phase)</span>
                     </div>
 
-                    <div class="bg-gray-50 p-4 rounded-lg shadow-inner mb-6">
-                        <h4 class="font-semibold text-gray-700 mb-2">状态摘要</h4>
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-sm text-gray-600">任务完成度:</span>
-                            <span class="text-sm font-semibold text-gray-800">${completedTasks} / ${totalTasks} (${completionProgress}%)</span>
+                    <h4 class="font-semibold text-gray-700 mb-2">阶段进度</h4>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-full bg-gray-200 rounded-full h-4">
+                            <div class="h-4 rounded-full ${isCompleted ? 'bg-emerald-500' : 'bg-indigo-500'}" style="width: ${node.progress || 0}%"></div>
                         </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                            <div class="h-2.5 rounded-full bg-indigo-500" style="width: ${completionProgress}%"></div>
-                        </div>
+                        <span class="text-lg font-bold text-gray-700 w-12 text-right">${node.progress || 0}%</span>
                     </div>
+                    <p class="text-sm text-gray-600 mb-4">${completedTasks} / ${totalTasks} 个关键项已完成。</p>
 
-                    <h4 class="font-semibold text-gray-700 mb-3 border-t pt-4 mt-4">阶段实例历史 (V${currentInstances.length})</h4>
-                    <div class="bg-white border rounded-lg p-3 max-h-48 overflow-y-auto">
-                        ${historyHtml}
+                    ${commonDetails}
+
+                    ${(node.discretionaryTasks && node.discretionaryTasks.length > 0) ? `
+                         <h4 class="font-semibold text-gray-700 mb-3 border-t pt-4 mt-4">可选任务列表</h4>
+                         <ul class="bg-white border rounded-lg p-3">
+                             ${discretionaryHtml}
+                         </ul>
+                    ` : ''}
+
+                    <h4 class="font-semibold text-gray-700 mb-3 border-t pt-4 mt-4">版本历史</h4>
+                    <div class="space-y-2">
+                        ${historyHtml || '<p class="text-sm text-gray-500">无历史版本记录。</p>'}
                     </div>
-
-                    <h4 class="font-semibold text-gray-700 mb-3 border-t pt-4 mt-4">可选任务列表</h4>
-                    <ul class="bg-white border rounded-lg p-3">
-                        ${discretionaryHtml}
-                    </ul>
                 `;
 
             } else {
                 // 4. Task/Milestone/Discretionary Details
                 const isDiscretionaryAndClosed = effectiveStatus === 'PhaseClosed';
-
                 detailHtml = `
                     <h3 class="text-2xl font-bold ${isCompleted ? 'text-emerald-600' : (isDiscretionaryAndClosed ? 'text-gray-400' : 'text-indigo-600')} mb-2">${node.name}</h3>
                     <div class="flex items-center space-x-3 mb-6">
@@ -932,103 +883,203 @@
                     </div>
 
                     ${isDiscretionaryAndClosed ? `
-                        <div class="bg-gray-100 text-gray-600 p-3 rounded-lg flex items-start mb-4">
+                         <div class="bg-gray-100 text-gray-600 p-3 rounded-lg flex items-start mb-4">
                              <svg class="w-5 h-5 mr-2 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                              <p class="text-sm">此可选任务所属的阶段已完成，当前任务已禁用。</p>
-                        </div>
+                         </div>
                     ` : ''}
 
                     ${node.status === 'AwaitingRevision' ? `
-                        <div class="bg-amber-100 text-amber-700 p-3 rounded-lg flex items-start mb-4">
-                             <svg class="w-5 h-5 mr-2 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                             <p class="text-sm">此任务处于【驳回】状态，等待前序阶段 (V${stageInstances[200].length}) 重新提交流程。</p>
-                        </div>
+                         <div class="bg-amber-100 text-amber-700 p-3 rounded-lg flex items-start mb-4">
+                             <svg class="w-5 h-5 mr-2 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.394 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                             <p class="text-sm font-semibold">流程驳回要求修订。请根据审批意见完成修改并重新提交。</p>
+                         </div>
                     ` : ''}
 
-                    <div class="space-y-2 mb-6">
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-gray-700 mb-2">任务详情</h4>
                         ${commonDetails}
                     </div>
 
-                    ${isCompleted ? `
-                        <div class="mt-8 pt-4 border-t border-gray-200">
-                             <p class="text-lg font-semibold text-emerald-600 flex items-center">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                任务已于 ${new Date().toLocaleDateString()} 完成
-                             </p>
-                             <p class="text-sm text-gray-500 mt-2">（此为模拟完成时间）</p>
+                    <div class="mt-6 border-t pt-4">
+                        <h4 class="font-semibold text-gray-700 mb-2">执行操作</h4>
+                        <div class="flex space-x-3">
+                            ${renderActionMenu(node, effectiveStatus)}
                         </div>
-                    ` : ''}
-
+                    </div>
                 `;
             }
 
-            detailContent.innerHTML = detailHtml;
+            document.getElementById('task-detail-content').innerHTML = detailHtml;
         }
 
         /**
-         * Main function to render the entire tree table.
+         * Selects a node, updates the activeNodeId, and re-renders the detail pane.
          */
-        function renderTreeTable() {
-            const tableBody = document.getElementById('plan-flow-table-body');
-            let totalHtml = '';
-
-            // Render top-level phases
-            budgetPlanTree.forEach(node => {
-                totalHtml += renderNodeRow(node, 0);
-            });
-
-            tableBody.innerHTML = totalHtml;
-        }
-
-        /**
-         * 集中处理数据更新和渲染，确保进度计算在渲染前完成
-         */
-        function updateAndRenderTree() {
-            // 1. 重新映射节点 (必须在计算进度前完成，因为需要 parentPhaseId)
-            allNodesMap = flattenAndMapNodes(budgetPlanTree);
-
-            // 2. 计算所有父节点的聚合进度和状态（从根节点开始）
-            // 迭代 budgetPlanTree 数组中的每个顶级阶段
-            budgetPlanTree.forEach(stage => {
-                calculateAggregateProgress(stage);
-            });
-
-            // 3. 重新渲染表格
-            renderTreeTable();
-
-            // 4. 重新选中当前节点（保持高亮和详情）
-            if (activeNodeId) {
-                // 确保在渲染后，详情面板会正确显示
-                selectPlanNode(activeNodeId, false);
-            }
-        }
-
-
-        // --- Modal Functions (for Discretionary Tasks) ---
-
-        function showActivationModal(phaseId, dTaskId, taskName) {
-            if (phaseId === 'null' || phaseId === null) {
-                showMessage('无法激活：未找到任务所属的父级阶段。', 'error');
+        function selectPlanNode(nodeId, shouldScroll = true) {
+            // Find the new node
+            const newNode = allNodesMap.get(nodeId);
+            if (!newNode) {
+                console.error(`Node ID ${nodeId} not found.`);
                 return;
             }
-            const modal = document.getElementById('activation-modal');
-            const phaseNode = allNodesMap.get(phaseId);
-            const dTask = allNodesMap.get(dTaskId);
 
-            // Prevent activation if the phase is completed (redundant check, but safe)
-            if (phaseNode.status === 'Completed' || getEffectiveStatus(dTask) === 'PhaseClosed') {
-                 showMessage('该可选任务所属阶段已完成，无法激活。', 'error');
-                 return;
+            // Remove highlight from old active row
+            const oldRow = document.querySelector(`tr[data-node-id="${activeNodeId}"]`);
+            if (oldRow) {
+                oldRow.classList.remove('row-active');
             }
 
-            document.getElementById('modal-title').textContent = `激活可选任务：${taskName}`;
-            document.getElementById('modal-task-name').textContent = taskName;
+            // Set new active node and add highlight
+            activeNodeId = nodeId;
+            const newRow = document.querySelector(`tr[data-node-id="${activeNodeId}"]`);
+            if (newRow) {
+                newRow.classList.add('row-active');
+                if (shouldScroll) {
+                    newRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+
+            // Render the detail pane for the selected node
+            renderDetailPane(newNode);
+
+            // Hide the activation modal in case it was open
+            closeActivationModal();
+        }
+
+        /**
+         * Toggles the expansion state of a Phase node.
+         */
+        function toggleExpand(phaseId) {
+            event.stopPropagation(); // Prevent row selection
+            if (expandedNodes.has(phaseId)) {
+                expandedNodes.delete(phaseId);
+            } else {
+                expandedNodes.add(phaseId);
+            }
+            renderTreeTable();
+        }
+
+        /**
+         * Main render function that regenerates the whole table body.
+         */
+        function renderTreeTable() {
+             // 1. Recalculate all aggregate progress and status from the root
+            budgetPlanTree.forEach(phase => calculateAggregateProgress(phase));
+
+            const tableBody = document.getElementById('plan-flow-table-body');
+            let html = '';
+            budgetPlanTree.forEach(node => {
+                html += renderNodeRow(node, 0);
+            });
+            tableBody.innerHTML = html;
+        }
+
+        /**
+         * Unified function to update data, render, and re-select.
+         */
+        function updateAndRenderTree() {
+            allNodesMap = flattenAndMapNodes(budgetPlanTree);
+            renderTreeTable();
+            // Ensure the initially selected row is highlighted and details are shown
+            selectPlanNode(activeNodeId, false);
+        }
+
+        // --- Modal/Action Handlers ---
+
+        function openApprovalModal(taskId, taskName) {
+             const modal = document.getElementById('approval-modal');
+             document.getElementById('approval-modal-title').innerText = taskName;
+             document.getElementById('approval-modal-task-name').innerText = `正在处理任务: ${taskName}`;
+             document.getElementById('approval-modal-task-id').value = taskId;
+             document.getElementById('modal-comment-approval').value = ''; // Clear previous comments
+             modal.classList.remove('hidden');
+        }
+
+        function closeApprovalModal() {
+            document.getElementById('approval-modal').classList.add('hidden');
+        }
+
+        function processApproval(result) {
+            const taskId = parseInt(document.getElementById('approval-modal-task-id').value);
+            const comment = document.getElementById('modal-comment-approval').value;
+
+            closeApprovalModal();
+
+            const node = allNodesMap.get(taskId);
+            if (!node) return;
+
+            // 1. Mark the approval task (301) as completed
+            node.status = 'Completed';
+            node.progress = 100;
+
+
+            // --- CMMN Branching ---
+            if (result === 'Approve') {
+                // 1. Mark Milestone 302 as completed (triggering next stage)
+                const milestone302 = allNodesMap.get(302);
+                if (milestone302) {
+                    milestone302.status = 'Completed';
+                    milestone302.progress = 100;
+                    showMessage('审批通过，流程进入【预算发布与锁定】阶段。', 'success');
+                }
+            } else if (result === 'Reject') {
+                // --- CMMN REVISION/LOOP LOGIC (Reject) ---
+                // 1. Increment Instance ID and Record History
+                currentInstanceId++;
+                const stageToReset = findNodeById(budgetPlanTree, 200); // Phase 200 (部门草案编制)
+
+                // Ensure the stage has an instance list
+                if (!stageInstances[stageToReset.id]) {
+                    stageInstances[stageToReset.id] = [];
+                }
+
+                stageInstances[stageToReset.id].push({
+                    instance: currentInstanceId,
+                    status: 'AwaitingRevision',
+                    timestamp: Date.now(),
+                    comment: `审批驳回，需重新修订并提交流程 (V${currentInstanceId})。意见: ${comment}`
+                });
+
+                // 2. Reset dependent tasks in the target stage (Phase 200) and mark them for revision
+                stageToReset.children.filter(c => c.type === 'Task').forEach(child => {
+                    // Reset only the tasks that were completed/in-progress
+                    if (child.status === 'Completed' || child.progress > 0) {
+                        child.status = 'AwaitingRevision'; // Custom status for revision highlight
+                        child.progress = 0;
+                    }
+                });
+
+                // 3. Mark the key exit milestone (205) as Blocked again
+                const milestone205 = allNodesMap.get(205);
+                 if (milestone205) {
+                    milestone205.status = 'Blocked';
+                    milestone205.progress = 0;
+                }
+
+                // 4. Update the Stage (200) status
+                stageToReset.status = 'AwaitingRevision'; // Set Phase 200 to AwaitingRevision
+
+                showMessage(`预算初审未通过，【${stageToReset.name}】阶段已重新打开 (V${currentInstanceId})。请检查表格中被重置的任务。`, 'warning');
+            }
+
+            // Re-render the table and details
+            updateAndRenderTree();
+        }
+
+        function openActivationModal(phaseId, dTaskId, taskName) {
+            const dTask = allNodesMap.get(dTaskId);
+            if (!dTask) return;
+
+            const modal = document.getElementById('activation-modal');
+            document.getElementById('modal-title').innerText = `激活可选任务：${taskName}`;
+            document.getElementById('modal-task-name').innerText = taskName;
             document.getElementById('modal-phase-id').value = phaseId;
             document.getElementById('modal-dtask-id').value = dTaskId;
-
             // Set default owner based on discretionary task data
             document.getElementById('modal-owner').value = dTask.owner || '预算员/部门负责人';
-
+            document.getElementById('modal-due-date').value = ''; // Clear date input
+            document.getElementById('modal-comment-activate').value = ''; // Clear comment
             modal.classList.remove('hidden');
         }
 
@@ -1045,13 +1096,12 @@
 
             // 1. Find the parent phase and discretionary task
             const phaseNode = allNodesMap.get(phaseId);
-
             // 必须在 phaseNode.discretionaryTasks 数组中找到并移除
             const dTaskIndex = phaseNode.discretionaryTasks.findIndex(t => t.id === dTaskId);
             if (dTaskIndex === -1) {
-                 showMessage('可选任务未找到或已被移除。', 'error');
-                 closeActivationModal();
-                 return;
+                showMessage('可选任务未找到或已被移除。', 'error');
+                closeActivationModal();
+                return;
             }
             const dTask = phaseNode.discretionaryTasks[dTaskIndex];
 
@@ -1070,203 +1120,42 @@
 
             // Remove from discretionaryTasks list
             phaseNode.discretionaryTasks.splice(dTaskIndex, 1);
-
             // Add to children list (this task now participates in progress calculation)
             phaseNode.children.push(newTask);
 
-            // 3. Update all data and render
+            // 3. Update the map and re-render
+            updateAndRenderTree();
+            selectPlanNode(dTaskId); // Select the newly activated task
+            showMessage(`可选任务【${newTask.name}】已成功激活并分配给 ${owner}。`, 'success');
+
             closeActivationModal();
-            showMessage(`可选任务【${dTask.name}】已激活并分配给 ${owner}。`, 'success');
-
-            // Update the tree with new task and re-render
-            updateAndRenderTree();
         }
 
-        // --- NEW Approval Modal Functions (for Task 301) ---
-
-        function showApprovalModal(taskId) {
-            const node = allNodesMap.get(taskId);
-            if (!node || node.type !== 'Task' || taskId !== 301) return;
-
-            // Prevent showing modal if already completed
-            if (getEffectiveStatus(node) === 'Completed') {
-                showMessage(`【${node.name}】已完成，无需重复操作。`, 'warning');
-                return;
-            }
-             if (getEffectiveStatus(node) === 'Blocked') {
-                // 更新 Blocked 状态文案
-                showMessage(`【${node.name}】等待前置，无法完成。请先完成依赖项。`, 'error');
-                return;
-            }
-
-            document.getElementById('approval-modal-task-name').textContent = `任务: ${node.name}`;
-            document.getElementById('approval-modal-task-id').value = taskId;
-            document.getElementById('modal-comment-approval').value = ''; // Clear comment field
-
-            document.getElementById('approval-modal').classList.remove('hidden');
-        }
-
-        function closeApprovalModal() {
-            document.getElementById('approval-modal').classList.add('hidden');
-        }
-
-        /**
-         * Processes the approval/rejection decision for Task 301
-         * @param {string} result - 'Approve' or 'Reject'
-         */
-        function processApproval(result) {
-            const taskId = parseInt(document.getElementById('approval-modal-task-id').value);
-            const node = allNodesMap.get(taskId);
-            const comment = document.getElementById('modal-comment-approval').value.trim();
-
-            if (!node || taskId !== 301) return;
-
-            if (result === 'Reject' && comment.length < 5) {
-                alert('驳回操作必须填写至少 5 个字的审批意见/驳回原因。');
-                return;
-            }
-
-            // Close the modal first
-            closeApprovalModal();
-
-            // --- Common Completion Logic for 301 ---
-            node.status = 'Completed';
-            node.progress = 100;
-            showMessage(`任务【${node.name}】模拟已完成。`, 'success');
-
-            // --- Approval / Rejection Branching ---
-            if (result === 'Approve') {
-                 // 1. Mark Milestone 302 as completed (triggering next stage)
-                 const milestone302 = allNodesMap.get(302);
-                 if (milestone302) {
-                     milestone302.status = 'Completed';
-                     milestone302.progress = 100;
-                     showMessage('审批通过，流程进入【预算发布与锁定】阶段。', 'success');
-                 }
-            } else if (result === 'Reject') {
-                // --- CMMN REVISION/LOOP LOGIC (Reject) ---
-
-                // 1. Increment Instance ID and Record History
-                currentInstanceId++;
-                const stageToReset = findNodeById(budgetPlanTree, 200); // Phase 200 (部门草案编制)
-
-                stageInstances[stageToReset.id].push({
-                    instance: currentInstanceId,
-                    status: 'AwaitingRevision',
-                    timestamp: Date.now(),
-                    comment: `审批驳回，需重新修订并提交流程 (V${currentInstanceId})。意见: ${comment}`
-                });
-
-                // 2. Reset dependent tasks in the target stage (Phase 200) and mark them for revision
-                stageToReset.children.filter(c => c.type === 'Task').forEach(child => {
-                    // Reset only the tasks that were completed/in-progress
-                    if (child.status === 'Completed' || child.progress > 0) {
-                        child.status = 'AwaitingRevision'; // Custom status for revision highlight
-                        child.progress = 0;
-                    }
-                });
-
-                // 3. Mark Task 301 as AwaitingRevision (since it needs to be run again after revision)
-                node.status = 'AwaitingRevision';
-                node.progress = 0;
-
-                // 4. Reset the exit milestone 205
-                const milestone205 = allNodesMap.get(205);
-                milestone205.status = 'Blocked';
-                milestone205.progress = 0;
-
-                // 5. Update the Stage (200)
-                stageToReset.status = 'Pending'; // Set Phase 200 to Pending
-
-                showMessage(`预算初审驳回，【${stageToReset.name}】阶段已重新打开 (V${currentInstanceId})。请检查表格中被重置的任务。`, 'warning');
-            }
-
-
-            // 4. Re-render the table and details
-            updateAndRenderTree();
-
-            // Show initial message in detail pane after completion
-            const detailContent = document.getElementById('task-detail-content');
-            detailContent.innerHTML = `
-                <div class="p-10 text-center text-gray-500">
-                    <svg class="w-10 h-10 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <p>请从左侧表格中选择一个计划项查看详情。</p>
-                </div>
-            `;
-        }
-
-        // --- Action Handlers ---
-
-        /**
-         * Simulates task action execution (Complete, SystemExecute, Reject, etc.)
-         */
-        function handleTaskAction(taskId, action) {
-            const node = allNodesMap.get(taskId);
-            if (!node) return;
-
-            const effectiveStatus = getEffectiveStatus(node);
-
-            if (action === 'Complete') {
-                if (taskId === 301) {
-                    // Intercept Task 301 completion to show the custom modal
-                    showApprovalModal(taskId);
-                    return;
-                }
-
-                // --- Standard Completion Logic for other Tasks ---
-
-                if (effectiveStatus === 'Blocked') {
-                    // 更新 Blocked 状态文案
-                    showMessage(`【${node.name}】等待前置，无法完成。请先完成依赖项。`, 'error');
-                    return;
-                }
-                if (node.status === 'Completed') {
-                    showMessage(`【${node.name}】已完成，无需重复操作。`, 'warning');
-                    return;
-                }
-
-                // Set to Completed
-                node.status = 'Completed';
-                node.progress = 100;
-                showMessage(`任务【${node.name}】模拟已完成。`, 'success');
-
-            } else if (action === 'SystemExecute') {
-                // System task logic (e.g., 401: System Lock)
-                if (effectiveStatus === 'Blocked') {
-                    // 更新 Blocked 状态文案
-                    showMessage(`【${node.name}】等待前置，无法执行。请先完成依赖项。`, 'error');
-                    return;
-                }
-                node.status = 'Completed';
-                node.progress = 100;
-                showMessage(`系统任务【${node.name}】模拟已自动完成。`, 'success');
-            }
-
-            // 3. Re-render the table and details
-            updateAndRenderTree();
-
-            // Show initial message in detail pane after completion
-            const detailContent = document.getElementById('task-detail-content');
-            detailContent.innerHTML = `
-                <div class="p-10 text-center text-gray-500">
-                    <svg class="w-10 h-10 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <p>请从左侧表格中选择一个计划项查看详情。</p>
-                </div>
-            `;
-        }
-
-        /**
-         * Action for dropdown menus (OpenForm, Assign, Comment, ViewLog)
-         */
-        function handleRowAction(taskId, actionType) {
+        function handleTaskAction(taskId, actionType) {
             const node = allNodesMap.get(taskId);
             if (!node) return;
 
             let actionText = '';
             switch (actionType) {
                 case 'TriggerSystem': // Simulate triggering a system task
-                    handleTaskAction(taskId, 'SystemExecute');
-                    return;
+                    if (getEffectiveStatus(node) === 'Blocked') {
+                        // 更新 Blocked 状态文案
+                        showMessage(`【${node.name}】等待前置，无法执行。请先完成依赖项。`, 'error');
+                        return;
+                    }
+                    node.status = 'Completed';
+                    node.progress = 100;
+                    showMessage(`系统任务【${node.name}】模拟已自动完成。`, 'success');
+                    break;
+                case 'Complete':
+                    if (getEffectiveStatus(node) === 'Blocked') {
+                        showMessage(`【${node.name}】等待前置，无法执行。请先完成依赖项。`, 'error');
+                        return;
+                    }
+                    node.status = 'Completed';
+                    node.progress = 100;
+                    showMessage(`任务【${node.name}】标记为完成。`, 'success');
+                    break;
                 case 'OpenForm':
                     const inboxId = kanbanToInboxMap[taskId];
                     if (inboxId) {
@@ -1274,23 +1163,30 @@
                         return;
                     }
                     actionText = node.type === 'Milestone' ? '查看检查点数据' : '进入表单界面';
+                    showMessage(`正在模拟对 [${node.name}] 执行：${actionText}`, 'info');
                     break;
                 case 'Assign':
                     actionText = '重新分派责任人';
+                    showMessage(`正在模拟对 [${node.name}] 执行：${actionText}`, 'info');
                     break;
                 case 'Comment':
                     actionText = '打开评论区';
+                    showMessage(`正在模拟对 [${node.name}] 执行：${actionText}`, 'info');
                     break;
                 case 'ViewLog':
                     actionText = '查看流程历史日志';
+                    showMessage(`正在模拟对 [${node.name}] 执行：${actionText}`, 'info');
                     break;
                 default:
                     actionText = '执行未知操作';
+                    showMessage(`正在模拟对 [${node.name}] 执行：${actionText}`, 'info');
             }
-            showMessage(`正在模拟对 [${node.name}] 执行：${actionText}`, 'info');
 
             // Close all dropdown menus
             document.querySelectorAll('.origin-top-right').forEach(d => d.classList.add('hidden'));
+
+            // 3. Re-render the table and details
+            updateAndRenderTree();
         }
 
 
