@@ -438,7 +438,8 @@
                 showMessage(`正在新标签页中打开待办任务中心，任务 ID: ${inboxTaskId}，并筛选流程为【财务预算 V2】`, 'info');
                 const processName = '财务预算 V2';
                 const url = `../taskinbox/index.html?taskId=${inboxTaskId}&processFilter=${encodeURIComponent(processName)}`;
-                window.open(url, '_blank');
+                // window.open(url, '_blank');
+                window.location.href = url;
             } else {
                 showMessage(`节点 ID ${kanbanNodeId} 暂无对应待办任务 (Inbox Task ID)。`, 'warning');
             }
