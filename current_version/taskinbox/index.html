@@ -608,6 +608,92 @@
                         <textarea id="adjustment" rows="4" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="说明是否需要修正以及修正的理由...">由于上月促销活动效果超预期，建议将 Q1 收入预测上调 3%。</textarea>
                     </div>
                 `;
+            } else if (task.id === 4) {
+                 // --- 任务ID 4: 销售对账差异报告与操作项（增强版） ---
+                 formHtml += `
+                    <h4 class="text-lg font-semibold text-red-600 border-b pb-2">销售对账差异报告与处理（11月）</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-4 p-3 bg-indigo-50 border-l-4 border-indigo-300">
+                        <div>
+                            <label class="block text-sm font-medium text-indigo-700">对账范围</label>
+                            <p class="mt-1 font-semibold text-gray-900">销售模块 - 平台收入</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-indigo-700">对账基准</label>
+                            <p class="mt-1 font-semibold text-gray-900">来源：<span class="text-blue-600">平台结算单</span> &rarr; 目标：<span class="text-green-600">财务收款单 (ERP)</span></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-indigo-700">差异总额 (RMB)</label>
+                            <span class="mt-1 font-semibold text-red-600 text-xl">￥ 15,200.00</span>
+                        </div>
+                    </div>
+
+                    <h4 class="text-lg font-semibold text-indigo-600 border-b pb-2 pt-4">差异明细、归因与操作项</h4>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 excel-like-table">
+                            <thead>
+                                <tr>
+                                    <th>对账编号</th>
+                                    <th>来源单据</th>
+                                    <th>目标单据</th>
+                                    <th>差异金额</th>
+                                    <th>归因分类</th>
+                                    <th>处理操作</th>
+                                    <th class="w-1/5">处理备注</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr class="bg-red-50">
+                                    <th>S-11001</th>
+                                    <td>PS-20251101</td>
+                                    <td>SK-ERP1058</td>
+                                    <td>-8,000.00</td>
+                                    <td>
+                                        <select class="w-full p-1 bg-white border rounded-md text-sm">
+                                            <option>选择归因</option>
+                                            <option>时差</option>
+                                            <option selected>未识别收入</option>
+                                            <option>退款未同步</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select class="w-full p-1 bg-gray-100 border rounded-md text-sm text-red-700">
+                                            <option>选择操作</option>
+                                            <option selected>生成调整凭证</option>
+                                            <option>发送邮件通知</option>
+                                        </select>
+                                    </td>
+                                    <td contenteditable="true" class="bg-gray-100 hover:bg-gray-200 transition duration-100">因平台退款数据延迟，需手动生成凭证。</td>
+                                </tr>
+                                <tr class="bg-yellow-50">
+                                    <th>S-11005</th>
+                                    <td>PS-20251025</td>
+                                    <td>SK-ERP1040</td>
+                                    <td>+7,200.00</td>
+                                    <td>
+                                        <select class="w-full p-1 bg-white border rounded-md text-sm">
+                                            <option>选择归因</option>
+                                            <option selected>系统 Bug (税率)</option>
+                                            <option>时差</option>
+                                            <option>未识别收入</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select class="w-full p-1 bg-gray-100 border rounded-md text-sm text-amber-700">
+                                            <option>选择操作</option>
+                                            <option>生成调整凭证</option>
+                                            <option selected>提交IT部门修正</option>
+                                        </select>
+                                    </td>
+                                    <td contenteditable="true" class="bg-gray-100 hover:bg-gray-200 transition duration-100">ERP系统税率计算错误，已提交IT部门，Bug ID: B-202511001</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <label for="review_summary" class="block text-sm font-medium text-gray-700 mt-4">对账总结与修订说明</label>
+                        <textarea id="review_summary" rows="3" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="总结差异原因和操作项...">本次对账差异项已全部识别。差异S-11001需等待财务凭证生成；S-11005需等待IT系统修复并重新同步数据。完成后，流程将进入下一阶段的审批。</textarea>
+                    </div>
+                 `;
             } else if (task.type === 'DataEntry') {
                 // IT资产采购配置表录入 (ID 2)
                 formHtml += `
